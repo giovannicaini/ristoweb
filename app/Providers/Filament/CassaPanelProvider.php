@@ -15,9 +15,11 @@ use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Vite;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Vite as FacadesVite;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class CassaPanelProvider extends PanelProvider
@@ -55,6 +57,12 @@ class CassaPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->databaseTransactions()
-            ->maxContentWidth(MaxWidth::Full);
+            ->maxContentWidth(MaxWidth::Full)
+            ->renderHook(
+                'panels::head.start',
+                fn(): string => FacadesVite::useHotFile('admin.hot')
+                    ->useBuildDirectory('build')
+                    ->withEntryPoints(['resources/css/app.css'])->toHtml()
+            );
     }
 }

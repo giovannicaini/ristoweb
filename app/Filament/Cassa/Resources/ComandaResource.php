@@ -1,20 +1,14 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Cassa\Resources;
 
-use App\Filament\Forms\Components\ProdottoSlider as ComponentsProdottoSlider;
-use App\Filament\Resources\ComandaResource\Pages;
-use App\Filament\Resources\ComandaResource\RelationManagers;
-use App\Forms\Components\ProdottoSlider;
+use App\Filament\Cassa\Resources\ComandaResource\Pages;
+use App\Filament\Cassa\Resources\ComandaResource\RelationManagers;
 use App\Models\Categoria;
 use App\Models\Comanda;
-use DeepCopy\Matcher\PropertyTypeMatcher;
-use Filament\Actions\Modal\Actions\Action;
+use Faker\Core\Number;
 use Filament\Forms;
-use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action as ActionsAction;
-use Filament\Forms\Components\Card;
-use Filament\Forms\Components\Contracts\HasAffixActions;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
@@ -24,13 +18,15 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Number as SupportNumber;
 
 class ComandaResource extends Resource
 {
@@ -40,7 +36,7 @@ class ComandaResource extends Resource
 
     public static function getPluralLabel(): ?string
     {
-        return "Comande";
+        return "Cassa";
     }
 
     public static function action2()
@@ -89,10 +85,10 @@ class ComandaResource extends Resource
                     ->numeric(),
                 Forms\Components\TextInput::make('buoni')
                     ->numeric(),
-                Forms\Components\TextInput::make('su_conto')
-                    ->numeric(),
                 Forms\Components\Select::make('conto_id')
                     ->relationship('conto', 'id'),
+                Forms\Components\TextInput::make('su_conto')
+                    ->numeric(),
                 Forms\Components\TextInput::make('stato')
                     ->maxLength(255),
                 Forms\Components\TextInput::make('note')
@@ -100,11 +96,126 @@ class ComandaResource extends Resource
             ]);
     }
 
+    public static function formTotali(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Section::make("TOTALI E PAGAMENTO")->schema([
+                    Forms\Components\TextInput::make('totale_prodotti_senza_sconto')
+                        ->label('Totale prodotti')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->extraInputAttributes(["class" => "text-right"])
+                        ->afterStateHydrated(function (TextInput $component, string $state) {
+                            $component->state(number_format($state, 2));
+                        })
+                        ->suffix('€'),
+                    Forms\Components\TextInput::make('totale_sconto_prodotti')
+                        ->label('Sconto sui prodotti')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->extraInputAttributes(["class" => "text-right"])
+                        ->afterStateHydrated(function (TextInput $component, string $state) {
+                            $component->state(number_format($state, 2));
+                        })
+                        ->suffix('€'),
+                    Forms\Components\TextInput::make('totale_prodotti_con_sconto')
+                        ->label('Subtotale')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->extraInputAttributes(["class" => "text-right"])
+                        ->afterStateHydrated(function (TextInput $component, string $state) {
+                            $component->state(number_format($state, 2));
+                        })
+                        ->suffix('€'),
+                    Forms\Components\TextInput::make('sconto')
+                        ->label('Sconto sulla comanda')
+                        ->numeric()
+                        //->mask(RawJs::make('$money($input)'))
+                        ->default(0.00)
+                        ->extraInputAttributes(["class" => "text-right"])
+                        ->afterStateHydrated(function (TextInput $component, $state) {
+                            if ($state)
+                                $component->state(number_format($state, 2));
+                        })
+                        ->live()
+                        ->afterStateUpdated(function (TextInput $component, Set $set, Get $get) {
+                            $set('subtotale', number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')) - floatval($get('buoni')), 2));
+                            //if ($get('sconto'))
+                            //  $component->state(number_format(floatval($get('sconto')), 2));
+                        })
+                        ->suffix('€'),
+                    Forms\Components\TextInput::make('buoni')
+                        ->label('Buoni')
+                        ->numeric()
+                        //->mask(RawJs::make('$money($input)'))
+                        ->default(0.00)
+                        ->extraInputAttributes(["class" => "text-right"])
+                        ->afterStateHydrated(function (TextInput $component, $state) {
+                            if ($state)
+                                $component->state(number_format($state, 2));
+                        })
+                        ->live()
+                        ->afterStateUpdated(function (TextInput $component, ?string $state, Set $set, Get $get) {
+                            $set('subtotale', number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')) - floatval($get('buoni')), 2));
+                            // if ($get('buoni'))
+                            //$component->state(number_format(floatval($get('buoni')), 2));
+                        })
+                        ->suffix('€'),
+                    Forms\Components\TextInput::make('subtotale')
+                        ->label('Totale Da Pagare')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->live()
+                        ->extraInputAttributes(["class" => "text-right"])
+                        ->afterStateHydrated(function (TextInput $component, Get $get) {
+                            $component->state(number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')), 2));
+                        })
+                        ->suffix('€'),
+
+                    Forms\Components\Select::make('conto_id')
+                        ->relationship('conto', 'nome')
+                        ->createOptionForm([
+                            Forms\Components\TextInput::make('nome')
+                                ->required()
+                        ]),
+                    Forms\Components\TextInput::make('su_conto')
+                        ->label("Importo da caricare sul conto")
+                        ->numeric(),
+
+
+
+                ])
+                    ->columnSpan(2)
+                    ->columns(6)
+            ]);
+    }
 
 
     public static function createSchema()
     {
         $schema = [];
+
+        $schema[] = Section::make("DATI GENERALI COMANDA")
+            ->schema([
+                Forms\Components\TextInput::make('n_ordine')
+                    ->required()
+                    ->numeric()
+                    ->disabled(),
+                Forms\Components\TextInput::make('nominativo')
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('tavolo')
+                    ->maxLength(255),
+                Forms\Components\Toggle::make('asporto'),
+            ])
+            ->columnSpan(1)
+            ->columns(4)
+            ->extraAttributes(["class" => "background-primary", "style" => "--c-600:var(--primary-600);"]);
+
         $categorie = Categoria::get();
         foreach ($categorie as $categoria) {
             $campi = [];
@@ -126,7 +237,7 @@ class ComandaResource extends Resource
                             ActionsAction::make('addValueProdotto' . $prodotto->id)
                                 ->icon('heroicon-s-plus')
                                 ->action(function (Set $set, Get $get) use ($prodotto) {
-                                    $set('prodotto_' . $prodotto->id, $get('prodotto_' . $prodotto->id) + 1);
+                                    $set('prodotto_' . $prodotto->id, intval($get('prodotto_' . $prodotto->id)) + 1);
                                 })
                                 ->extraAttributes(['tabIndex' => -1])
                         )
@@ -135,7 +246,7 @@ class ComandaResource extends Resource
                                 ->icon('heroicon-s-minus')
                                 ->action(function (Set $set, Get $get) use ($prodotto) {
 
-                                    $set('prodotto_' . $prodotto->id, $get('prodotto_' . $prodotto->id) - 1 > 0 ? $get('prodotto_' . $prodotto->id) - 1 : '');
+                                    $set('prodotto_' . $prodotto->id, $get('prodotto_' . $prodotto->id) - 1 > 0 ? intval($get('prodotto_' . $prodotto->id)) - 1 : '');
                                 })
                                 ->disabled(function (Get $get) use ($prodotto) {
                                     return $get('prodotto_' . $prodotto->id) <= 0;
@@ -202,30 +313,11 @@ class ComandaResource extends Resource
             ->schema(self::createSchema())
             ->columns(1);
     }
-    public function decrementValue()
-    {
-        dd("CIAO");
-    }
-    /*
-    public $generateNewCode = ActionsAction::make('generateNewCode')
-        ->action(
-            fn(TextInput $component) => $component->state("prova")
-        );
-*/
-    public function dimTavolo()
-    {
-        dd("CIAO");
-    }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nome')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('evento.id')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('n_ordine')
                     ->numeric()
                     ->sortable(),
@@ -280,7 +372,7 @@ class ComandaResource extends Resource
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                //Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -288,7 +380,11 @@ class ComandaResource extends Resource
                     Tables\Actions\ForceDeleteBulkAction::make(),
                     Tables\Actions\RestoreBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->recordUrl(
+                fn(Model $record): string => route('filament.cassa.resources.comandas.comanda', ['record' => $record]),
+            )
+            ->defaultSort('created_at', 'desc');
     }
     public static function getRelations(): array
     {
@@ -302,7 +398,7 @@ class ComandaResource extends Resource
         return [
             'index' => Pages\ListComandas::route('/'),
             'create' => Pages\CreateComanda::route('/create'),
-            'edit' => Pages\EditComanda::route('/{record}/edit'),
+            //'edit' => Pages\EditComanda::route('/{record}/edit'),
             'comanda' => Pages\Comanda::route('/{record}/comanda'),
 
         ];

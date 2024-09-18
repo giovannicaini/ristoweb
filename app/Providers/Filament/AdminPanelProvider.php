@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Phpsa\FilamentAuthentication\FilamentAuthentication;
 use Phpsa\FilamentAuthentication\Widgets\LatestUsersWidget;
@@ -34,8 +35,11 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Cassa/Resources'), for: 'App\\Filament\\Cassa\\Resources')
+            ->discoverPages(in: app_path('Filament/Cassa/Pages'), for: 'App\\Filament\\Cassa\\Pages')
             ->pages([
                 Pages\Dashboard::class,
             ])
@@ -62,6 +66,13 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 //FilamentSpatieRolesPermissionsPlugin::make(),
                 FilamentAuthentication::make()
-            ]);
+            ])
+            ->renderHook(
+                'panels::head.start',
+                fn(): string => Vite::useHotFile('admin.hot')
+                    ->useBuildDirectory('build')
+                    ->withEntryPoints(['resources/css/app.css'])->toHtml()
+            )
+        ;
     }
 }

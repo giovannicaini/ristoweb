@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('evento_id');
             $table->integer('ordine');
             $table->boolean('attivo')->default(1);
+            $table->boolean('coperto')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

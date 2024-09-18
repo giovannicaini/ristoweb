@@ -37,4 +37,9 @@ class Evento extends Model
     {
         return $this->hasMany(Prodotto::class);
     }
+
+    public static function Corrente()
+    {
+        return self::where('attivo', true)->first()->id;
+    }
 }

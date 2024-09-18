@@ -47,6 +47,21 @@
             @endif
         </x-filament-panels::resources.relation-managers>
     @endif
+    @capture($formTotali)
+    <x-filament-panels::form
+        id="form-totali"
+        :wire:key="$this->getId() . '.forms.' . $this->getFormTotaliStatePath()"
+        wire:submit="saveTotali"
+    >
+        {{ $this->formTotali }}
 
+        <x-filament-panels::form.actions
+            :actions="$this->getFormTotaliActions()"
+            :full-width="$this->hasFullWidthFormTotaliActions()"
+        />
+    </x-filament-panels::form>
+    @endcapture
+
+    {{ $formTotali() }}
     <x-filament-panels::page.unsaved-data-changes-alert />
 </x-filament-panels::page>
