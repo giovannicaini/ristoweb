@@ -36,4 +36,9 @@ class Comanda extends Model
     {
         return $this->hasMany(ComandaDettaglio::class);
     }
+
+    public function numero_coperti()
+    {
+        return ComandaDettaglio::where('prodotto_id', Prodotto::where('coperto', true)->first())->first()->quantita;
+    }
 }

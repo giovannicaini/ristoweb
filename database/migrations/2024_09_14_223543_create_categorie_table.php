@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('categorie', function (Blueprint $table) {
             $table->id();
             $table->string('nome')->unique();
-            $table->integer('postazione_id');
+            $table->integer('postazione_id')->nullable();
             $table->integer('evento_id');
             $table->integer('ordine');
             $table->integer('colonna');

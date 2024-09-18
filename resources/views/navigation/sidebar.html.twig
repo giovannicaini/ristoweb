@@ -1,0 +1,29 @@
+<aside class="main-sidebar sidebar-dark-primary elevation-4">
+	{% block sidebar_logo %}
+		<!-- Brand Logo -->
+		<a href="{{site.uri.public}}" class="brand-link elevation-4">
+			{% if site.uri.logo %}
+				<img src="{{site.uri.public}}/assets-raw/userfrosting/images/{{site.uri.logo}}" alt="{{site.title}} Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
+			{% endif %}
+			<span class="brand-text font-weight-light">{{site.title}}</span>
+		</a>
+	{% endblock %}
+	
+	<!-- Sidebar -->
+    <div class="sidebar">
+		{% block sidebar_user %}
+			{% include 'navigation/sidebar-user.html.twig' %}
+		{% endblock %}
+
+		{% block sidebar_menu %}
+		<!-- Sidebar Menu -->
+		<nav class="mt-2">
+			<ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+				<li class="header" style="text-transform: uppercase">{{translate('NAVIGATION')}}</li>
+				{% include 'navigation/sidebar-menu.html.twig' %}
+			</ul>
+		</nav>
+		{% endblock %}
+	</div>
+	<!-- /.sidebar -->
+</aside>

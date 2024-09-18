@@ -1,0 +1,33 @@
+{% extends "pages/abstract/default.html.twig" %}
+
+{% set page_active = "home" %}
+
+{# Overrides blocks in head of base template #}
+{% block page_title %}{{translate("HOME")}}{% endblock %}
+
+{% block page_description %}Gestione Ristorante - Festa di Santa Teresa 2022{% endblock %}
+
+{% block body_matter %}
+	<div class="row">
+		<div class="col-lg-6">
+			<div class="card card-primary card-outline">
+				<div class="card-header">
+					<h5 class="card-title m-0">Comande</h5>
+				</div>
+				<div class="card-body">
+					<a href="{{site.uri.public}}/comande" class="btn btn-primary">Gestione Comande</a>
+				</div>
+			</div>
+		</div>
+	  <!-- /.col-md-6 -->
+	</div>
+	<!-- /.row -->
+{% endblock %}
+
+
+
+{% block scripts_page %}
+    <script>
+   
+    </script>
+{% endblock %}

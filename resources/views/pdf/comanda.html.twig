@@ -1,0 +1,104 @@
+<html>
+<head>
+	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet">
+	<style>
+		@page {
+            margin: 15px 40px 10px 40px !important;
+            padding: 0px 0px 0px 0px !important;
+        }
+		.postazione, .scontrino, {
+			page-break-inside: avoid;
+		}
+		.break {
+			page-break-before: always;
+		}
+		body{
+			font-size:0.8em;
+		}
+	</style>
+</head>
+<body>
+	<div class="scontrino">
+		<h5 style="text-align:center">{{evento.nome}} - {{evento.data|date('d/m/Y')}}<br>COPIA PER IL CLIENTE <small>[{{comanda.nominativo}}]</small></h5>
+		
+		{% for dettaglio in dettagli %}
+		<div style="clear:both"></div>
+		<div style="float:left; width:10%">{{dettaglio.quantita}}</div>
+		<div style="float:left; width:55%">{{dettaglio.prodotto.nome}}</div>
+		<div style="float:left; text-align:right; width:15%">{% if dettaglio.quantita != 1 %}{{dettaglio.prodotto.prezzo|number_format(2)}} € {% endif %}</div>
+		<div style="float:left; text-align:right; width:20%">{{(dettaglio.prodotto.prezzo * dettaglio.quantita)|number_format(2)}} €</div>
+		{% endfor %}
+		<div style="clear:both"></div>
+		<hr>
+		{% if comanda.sconto>0 or comanda.buoni>0 %}
+		<div style="clear:both"></div>
+		<div style="float:left; text-align:left; width:80%">SUBTOTALE</div>
+		<div style="float:left; text-align:right; width:20%">{{comanda.totale|number_format(2)}} €</div>
+		{% endif %}
+		{% if comanda.sconto>0 %}
+		<div style="clear:both"></div>
+		<div style="float:left; text-align:left; width:80%">SCONTO</div>
+		<div style="float:left; text-align:right; width:20%">{{comanda.sconto|number_format(2)}} €</div>
+		{% endif %}
+		{% if comanda.buoni>0 %}
+		<div style="clear:both"></div>
+		<div style="float:left; text-align:left; width:80%">BUONI</div>
+		<div style="float:left; text-align:right; width:20%">{{comanda.buoni|number_format(2)}} €</div>
+		{% endif %}
+		<div style="clear:both"></div>
+		<div style="float:left; text-align:left; width:80%"><b>TOTALE PAGATO</b></div>
+		<div style="float:left; text-align:right; width:20%"><b>{{comanda.pagato|number_format(2)}} €</b></div>
+		<div style="clear:both"></div>
+		<div style="text-align:center; width:100%">#ORDINE: <b>{{comanda.n_ordine}}</b> {% if comanda.asporto %}| <b>ASPORTO</b> {% endif %}{% if comanda.tavolo %}| Tav. <b>{{comanda.tavolo}}</b> {% endif %}| {{comanda.updated_at|date('d/m/Y - H:i')}}</div>
+		
+		{% for postazione in postazioni_scontrino %}
+			<div class="postazione">
+				<br />
+				<hr>
+				<h5 style="text-align:center; margin: 0;">COPIA PER LA POSTAZIONE {{postazione.nome|upper}}</h5>
+				<div style="clear:both"></div>
+				<div style="float:left;">#Ordine:</div>
+				<div style="float:left; text-align:center; border: 1px solid black;"><b>{{comanda.n_ordine}}</b></div>
+				<div style="float:left;">&nbsp;- <b><small>{{comanda.nominativo}}</small></b></div>
+				{% if comanda.asporto %}
+					<div style="float:right;"><b>ASPORTO</b></div>
+				{% else %}
+					<div style="float:right; text-align:center; border: 1px solid black; min-width:50px; min-height:20px;"><b>{{comanda.tavolo}}</b></div>
+					<div style="float:right;">Tav:</div> 
+				{% endif %}
+				{% for dettaglio in postazione.dettagli %}
+					<div style="clear:both"></div>
+					<div style="float:left; width:10%">{{dettaglio.quantita}}</div>
+					<div style="float:left; width:90%">{{dettaglio.prodotto.nome_breve}}</div>
+				{% endfor %}
+				<div style="clear:both"></div>
+				<div style="float:left; width:100%; text-align: center"><small>{{comanda.updated_at|date('d/m/Y - H:i')}}</small></div>
+			</div>
+		{% endfor %}
+	</div>
+	<div style="page-break-after:always;"></div>
+	{% for postazione in postazioni_no_scontrino %}
+		<div class="postazione">
+			<br />
+			<hr>
+			<h5 style="text-align:center; margin: 0;">COPIA PER LA POSTAZIONE {{postazione.nome|upper}}</h5>
+			<div style="clear:both"></div>
+			<div style="float:left;">#Ordine:</div>
+			<div style="float:left; text-align:center; border: 1px solid black;"><b>{{comanda.n_ordine}}</b></div>
+			<div style="float:left;">&nbsp;- <b><small>{{comanda.nominativo}}</small></b></div>
+			{% if comanda.asporto %}
+				<div style="float:right;"><b>ASPORTO</b></div>
+			{% else %}
+				<div style="float:right; text-align:center; border: 1px solid black; min-width:50px; min-height:20px;"><b>{{comanda.tavolo}}</b></div>
+				<div style="float:right;">Tav:</div> 
+			{% endif %}
+			{% for dettaglio in postazione.dettagli %}
+				<div style="clear:both"></div>
+				<div style="float:left; width:10%">{{dettaglio.quantita}}</div>
+				<div style="float:left; width:90%">{{dettaglio.prodotto.nome_breve}}</div>
+			{% endfor %}
+			<div style="clear:both"></div>
+			<div style="float:left; width:100%; text-align: center"><small>{{comanda.updated_at|date('d/m/Y - H:i')}}</small></div>
+		</div>
+	{% endfor %}
+</body>

@@ -1,0 +1,25 @@
+{% block userCard %}
+<li class="nav-item dropdown user-menu">
+	<a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">
+		<img src="{{current_user.avatar}}" class="user-image img-circle elevation-2" alt="User Image">
+		<span class="d-none d-md-inline">{{current_user.first_name}} {{current_user.last_name}}</span>
+	</a>
+	<ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+		{% block userCard_userInfo %}
+			<li class="user-header bg-primary">
+				<img src="{{current_user.avatar}}" class="img-circle elevation-2" alt="User Image">
+				<p>
+				{{current_user.first_name}} {{current_user.last_name}}
+				<small>({{current_user.user_name}})</small>
+				</p>
+			</li>
+		{%endblock %}
+
+		<li class="user-footer">
+			{% block userCard_menu %}
+				<a href="{{site.uri.public}}/account/logout" class="btn btn-default btn-flat float-right">LOGOUT</a>
+			{% endblock %}
+		</li>
+	</ul>
+</li>
+{% endblock %}

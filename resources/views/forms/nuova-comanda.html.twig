@@ -1,0 +1,80 @@
+<form class="js-form" method="{{form.method | default('POST')}}" action="{{site.uri.public}}/{{form.action}}">
+    {% include "forms/csrf.html.twig" %}
+    <div class="js-form-alerts">
+    </div>
+    <div class="row">
+		<div class="col-sm-6">
+			<label for="cassiere">Cassa</label>
+			<div class="input-group mb-3">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+						<span class="fas fa-user"></span>
+					</div>
+				</div>
+				<input type="text" class="form-control" value="{{cassa.nome}}" id="cassa" disabled>
+				<input type="hidden" class="form-control" value="{{cassa.id}}" name="cassa_id" id="cassa_id">
+			</div>
+		</div>
+		<div class="col-sm-6">
+			<label for="cassiere">Cassiere</label>
+			<div class="input-group mb-3">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+						<span class="fas fa-user"></span>
+					</div>
+				</div>
+				<input type="text" class="form-control" value="{{utente.first_name}} {{utente.last_name}}" id="user_name" disabled>
+				<input type="hidden" class="form-control" value="{{utente.id}}" name="cassiere_id" id="cassiere_id">
+			</div>
+		</div>
+		<div class="col-sm-12">
+			<label for="evento">Evento</label>
+			<div class="input-group mb-3">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+						<span class="fas fa-user"></span>
+					</div>	
+				</div>
+				<input type="text" class="form-control" value="{{evento.nome}} - {{evento.data|date("d/m/Y")}}" id="evento" disabled>
+				<input type="hidden" class="form-control" value="{{evento.id}}" name="evento_id" id="evento_id">
+			</div>
+		</div>
+	</div>
+    <div class="row">
+		<div class="col-sm-12">
+			<label for="nominativo">Nominativo</label>
+			<div class="input-group mb-3">
+				<div class="input-group-prepend">
+					<div class="input-group-text">
+						<span class="fas fa-user"></span>
+					</div>
+				</div>
+				<input type="text" class="form-control" name="nominativo" id="nominativo">
+			</div>
+		</div>
+    </div>
+	<div class="row">
+		<div class="col-sm-6">
+			<div class="form-group">
+				<div class="form-check">
+					<input id="asporto" class="form-check-input" name="asporto" type="checkbox">
+					<label for="asporto" class="form-check-label">Asporto</label>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<br>
+    <div class="row">
+        <div class="col-xs-8 col-sm-4">
+            <button type="submit" class="btn btn-block btn-sm btn-success">{{form.submit_text}}</button>
+        </div>
+        <div class="col-xs-4 col-sm-3 pull-right">
+            <button type="button" class="btn btn-block btn-sm btn-danger float-right" data-dismiss="modal">Annulla</button>
+        </div>
+    </div>
+</form>
+<!-- Include validation rules -->
+<script>
+{% include "pages/partials/page.js.twig" %}
+</script>

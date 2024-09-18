@@ -1,0 +1,50 @@
+<html>
+<head>
+	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet">
+	<style>
+		@page {
+            margin: 15px 40px 10px 40px !important;
+            padding: 0px 0px 0px 0px !important;
+        }
+		.postazione, .scontrino, .categoria {
+			page-break-inside: avoid;
+		}
+		.break {
+			page-break-before: always;
+		}
+		body{
+			font-size:1em;
+		}
+		table, tr, td {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+	</style>
+</head>
+<body>
+	<h2 style="text-align:center">{{evento.nome}} - {{evento.data|date('d/m/Y')}}</h2>
+	<h3 style="text-align:center">Riepilogo Comande</h3>
+	{% set a = 0 %}
+	<div style="clear: both"></div>
+	{% for categoria in categorie %}
+		<div class="categoria">
+			<h5 style="text-align:center">{{categoria.nome}}</h5>
+			<table style="width:100%">
+				{% for prodotto in categoria.prodotti %}
+					<tr>
+						<td style="width:60%">{{prodotto.nome}}</td>
+						<td style="width:20%; text-align:center">{{prodotto.conta}}</td>
+						<td style="width:20%; text-align:right">{% if prodotto.incasso%}{{prodotto.incasso|number_format(2)}} €{% set a = a + prodotto.incasso %}{% endif %}</td>
+					</tr>
+				{% endfor %}
+			</table>
+		</div>
+	{% endfor %}
+	<br /><br />
+	<table style="width:100%">
+		<tr>
+			<td style="width:80%">TOTALE</td>
+			<td style="width:20%; text-align:right">{{a|number_format(2)}} €</td>
+		</tr>
+	</table>
+</body>

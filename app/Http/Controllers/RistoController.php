@@ -48,7 +48,7 @@ use Dompdf\Options;
 
 class RistoController extends BaseController
 {
-    use AuthorizesRequests, ValidatesRequests;
+	use AuthorizesRequests, ValidatesRequests;
 
 	private function eventoCorrente()
 	{
@@ -82,9 +82,9 @@ class RistoController extends BaseController
 		]);
 	}
 
-	public function pageQr(Request $request, Response $response, array $args)
+	public function pageQr()
 	{
-		return $this->ci->view->render($response, 'pages/qr.html.twig', []);
+		return View('pages.comanda', []);
 	}
 
 	public function pageComanda(Request $request, Response $response, array $args): Response

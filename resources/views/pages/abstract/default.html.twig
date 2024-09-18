@@ -1,0 +1,52 @@
+{% extends "pages.abstract.base" %}
+
+{% block stylesheets_page_group %}
+{% endblock %}
+
+{% block body_attributes %}
+    class="hold-transition layout-top-nav"
+{% endblock %}
+
+{% block content %}
+		<div class="wrapper">
+			{% include "navigation.main-nav" %}
+
+
+		  <!-- Content Wrapper. Contains page content -->
+		  <div class="content-wrapper">
+			<!-- Content Header (Page header) -->
+			<div class="content-header">
+				<div class="container">
+				<!-- Content Header (Page header) -->
+				{% block content_header %}
+					<div class="row mb-2">
+						<div class="col-sm-6">
+							<h1 class="m-0"> {% block header_title %}{{ block('page_title') }}{% endblock %}</h1>
+						</div><!-- /.col -->
+						<div class="col-sm-6">
+							{% include 'navigation.breadcrumb' with {page_title: block('page_title')} %}
+						</div><!-- /.col -->
+					</div><!-- /.row -->
+					<div class="row mb-2">
+						<div class="col-sm-12">
+							<h1 class="m-0">{% if block('page_description') is not empty %}<small>{% block header_description %}{{ block('page_description') }}{% endblock %}</small>{% endif %}</h1>
+						</div>
+					</div>
+				{% endblock %}
+				</div><!-- /.container-fluid -->
+			</div>
+			<div class="content">
+				<div class="container">
+					<div id="alerts-page"></div>
+					{% block body_matter %}{% endblock %}
+				</div>
+			</div>
+			</div>
+			<!-- ./content-wrapper -->
+			{% block footer %}
+				{% include "pages.partials.footer" %}
+			{% endblock %}
+		</div>
+		<!-- ./wrapper -->
+		
+{% endblock %}

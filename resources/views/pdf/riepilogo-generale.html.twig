@@ -1,0 +1,78 @@
+<html>
+<head>
+	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet">
+	<style>
+		@page {
+            margin: 15px 40px 10px 40px !important;
+            padding: 0px 0px 0px 0px !important;
+        }
+		.postazione, .scontrino, .categoria {
+			page-break-inside: avoid;
+		}
+		.break {
+			page-break-before: always;
+		}
+		body{
+			font-size:0.6em;
+		}
+		table, tr, td, th {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+		h5 {
+			font-size:1.1em;
+		}
+		h3 {
+			font-size: 1.5em;
+		}
+	</style>
+</head>
+<body>
+	<h2 style="text-align:center">{{nome_evento}}</h2>
+	<h3 style="text-align:center">Riepilogo Comande {{titolo_date}}</h3>
+	{% set a = 0 %}
+	<div style="clear: both"></div>
+	{% for cate,prod in cate_array_3 %}
+		<div class="categoria">
+			<h5 style="text-align:center">{{cate}}</h5>
+			<table style="width:100%">
+				<tr>
+					<th style="width:60%">Prodotto</th>
+					{% set totale = 0 %}
+					{% for evento in eventi %}
+						<th colspan="2" style="width:40%">{{evento.data|date('d/m')}}</th>
+					{% endfor %}
+					<th colspan="2" style="width:40%">Totale</th>
+				{% for prodotto,eventi in prod %}
+					<tr>
+						<td style="width:60%">{{prodotto}}</td>
+						{% set tot = 0 %}{% set conta = 0 %}
+						{% for evento in eventi %}
+						{% set totale = totale + evento.incasso %}
+						<td style="width:20%; text-align:center">{{evento.conta}} {% set conta = conta+evento.conta %}</td>
+						<td style="width:20%; text-align:right">{% if evento.incasso%}{{evento.incasso|number_format(2)}} €{% set a = a + evento.incasso %}{% set tot = tot+evento.incasso %}{% endif %}</td>
+						{% endfor%}
+						<td style="width:20%; text-align:center">{{conta}}</td>
+						<td style="width:20%; text-align:right">{% if tot > 0 %}{{tot|number_format(2)}} €{% endif %}</td>
+					</tr>
+				{% endfor %}
+				<tr>
+					<td></td>
+					{% for evento in eventi %}
+						<td></td><td></td>
+					{% endfor%}
+					<td></td>
+					<td style="width:20%; text-align:right">{{totale|number_format(2)}} €</td>
+					
+				</tr>
+			</table>
+		</div>
+	{% endfor %}
+	<br /><br />
+	<table style="width:100%">
+		<tr>
+			<td style="width:80%"><b>TOTALE</b></td>
+			<td style="width:20%; text-align:right"><b>{{a|number_format(2)}} €</b></td>
+		</tr>
+	</table>
+</body>

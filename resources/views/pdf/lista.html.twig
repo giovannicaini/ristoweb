@@ -1,0 +1,68 @@
+<html>
+<head>
+	<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet">
+	<style>
+		@page {
+            margin: 15px 40px 10px 40px !important;
+            padding: 0px 0px 0px 0px !important;
+        }
+		.postazione, .scontrino, .categoria {
+			page-break-inside: avoid;
+		}
+		.break {
+			page-break-before: always;
+		}
+		body{
+			font-size:0.9em;
+		}
+		table, tr, td, th {
+			border: 1px solid black;
+			border-collapse: collapse;
+		}
+		td,th{
+			//padding:1px 10px 1px 10px;
+			vertical-align:middle;
+			
+		}
+	</style>
+</head>
+<body>
+	<h2 style="text-align:center">{{evento.nome}} - {{evento.data|date('d/m/Y')}}</h2>
+	<div style="float: left; border: 1px solid black; width: 400px; height: 30px; "><b> NOMINATIVO: </b></div>
+	<div style="float: right; border: 1px solid black; width: 200px; height: 30	px;"><b> TAVOLO: </b></div>
+	
+	<div style="clear: both"></div>
+	{% for categoria in categorie %}
+		{% if categoria.nome != "Coperto" %}
+		<div class="categoria">
+			<h5 style="text-align:center">{{categoria.nome}}</h5>
+			<table style="width:100%">
+				<tr>
+						<th style="width:20%">Quantità</td>
+						<th style="width:60%">Prodotto</td>
+						<th style="width:20%; text-align:center">Prezzo</td>
+						<!--<th style="width:0%"></td>-->
+					</tr>
+				{% for prodotto in categoria.prodotti %}
+					<tr>
+						<td style="width:20%"></td>
+						<td style="width:60%">{{prodotto.nome}}</td>
+						<td style="width:20%; text-align:center">{{prodotto.prezzo|number_format(2)}}</td>
+						<!--<td style="width:0%"></td>-->
+					</tr>
+				{% endfor %}
+			</table>
+		</div>
+		{% endif %}
+	{% endfor %}
+	<br /><br />
+	<h2 style="text-align:center">DOPO AVER COMPILATO IL FOGLIO <br />(COMPRESO IL NUMERO DEL TAVOLO E IL NOME),<br /> PORTARLO ALLA CASSA!</h2>
+	<!--
+	<table style="width:100%">
+		<tr>
+			<td style="width:85%">TOTALE</td>
+			<td style="width:15%"></td>
+		</tr>
+	</table>
+	-->
+</body>

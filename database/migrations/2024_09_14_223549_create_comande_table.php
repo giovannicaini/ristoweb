@@ -13,14 +13,13 @@ return new class extends Migration
     {
         Schema::create('comande', function (Blueprint $table) {
             $table->id();
-            $table->string('nome')->unique();
             $table->integer('evento_id');
             $table->integer('n_ordine');
             $table->string('nominativo')->nullable();
             $table->string('tavolo')->nullable();
             $table->boolean('asporto')->nullable();
             $table->integer('cassiere_id');
-            $table->integer('cassa_id');
+            $table->integer('cassa_id')->nullable();
             $table->decimal('totale', 6, 2)->default('0.00')->nullable();
             $table->decimal('pagato', 6, 2)->nullable();
             $table->decimal('sconto', 6, 2)->nullable();
