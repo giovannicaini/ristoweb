@@ -146,6 +146,7 @@ class ComandaResource extends Resource
                         ->live()
                         ->afterStateUpdated(function (TextInput $component, Set $set, Get $get) {
                             $set('subtotale', number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')) - floatval($get('buoni')), 2));
+                            $set('subtotale2', number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
                             //if ($get('sconto'))
                             //  $component->state(number_format(floatval($get('sconto')), 2));
                         })
@@ -163,6 +164,7 @@ class ComandaResource extends Resource
                         ->live()
                         ->afterStateUpdated(function (TextInput $component, ?string $state, Set $set, Get $get) {
                             $set('subtotale', number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')) - floatval($get('buoni')), 2));
+                            $set('subtotale2', number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
                             // if ($get('buoni'))
                             //$component->state(number_format(floatval($get('buoni')), 2));
                         })
@@ -175,22 +177,51 @@ class ComandaResource extends Resource
                         ->live()
                         ->extraInputAttributes(["class" => "text-right"])
                         ->afterStateHydrated(function (TextInput $component, Get $get) {
-                            $component->state(number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')), 2));
+                            $component->state(number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')) - floatval($get('buoni')), 2));
                         })
                         ->suffix('€'),
 
                     Forms\Components\Select::make('conto_id')
+                        ->label("Conto (volontari che pagano dopo)")
                         ->relationship('conto', 'nome')
                         ->createOptionForm([
                             Forms\Components\TextInput::make('nome')
                                 ->required()
-                        ]),
+                        ])
+                        ->columnSpan(2)
+                        ->live(),
                     Forms\Components\TextInput::make('su_conto')
-                        ->label("Importo da caricare sul conto")
-                        ->numeric(),
-
-
-
+                        ->label('Importo sul conto')
+                        ->numeric()
+                        //->mask(RawJs::make('$money($input)'))
+                        ->default(0.00)
+                        ->hidden(fn(Get $get) => $get("conto_id")==null)
+                        ->extraInputAttributes(["class" => "text-right"])
+                        ->afterStateHydrated(function (TextInput $component, $state) {
+                            if ($state)
+                                $component->state(number_format($state, 2));
+                        })
+                        ->live()
+                        ->afterStateUpdated(function (TextInput $component, ?string $state, Set $set, Get $get) {
+                            $set('subtotale2', number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
+                            // if ($get('buoni'))
+                            //$component->state(number_format(floatval($get('buoni')), 2));
+                        })
+                        ->suffix('€')
+                        ->columnSpan(2),
+                    Forms\Components\TextInput::make('subtotale2')
+                        ->label('Totale Da Pagare')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->live()
+                        ->extraInputAttributes(["class" => "text-right"])
+                        ->hidden(fn(Get $get) => $get("conto_id")==null)
+                        ->afterStateHydrated(function (TextInput $component, Get $get) {
+                            $component->state(number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
+                        })
+                        ->suffix('€')
+                        ->columnStart(6),
                 ])
                     ->columnSpan(2)
                     ->columns(6),

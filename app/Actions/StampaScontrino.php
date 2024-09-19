@@ -12,6 +12,7 @@ use Illuminate\Support\ItemNotFoundException;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Mike42\Escpos\PrintConnectors\NetworkPrintConnector;
 use Mike42\Escpos\Printer;
+use Mike42\Escpos\EscposImage;
 use App\Helpers\Item;
 use App\Models\Categoria;
 use App\Models\Prodotto;
@@ -32,23 +33,20 @@ class StampaScontrino
         $postazioni_id = array();
         foreach ($comanda->comande_dettagli as $dettaglio) {
             $postazione = $dettaglio->prodotto->categoria->postazione_id;
-            if (!in_array($postazione, $postazioni_id))
+            if ($postazione && !in_array($postazione, $postazioni_id))
                 array_push($postazioni_id, $postazione);
         }
-        error_log("1");
         $postazioni_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', true)->orderBy('ordine')->get();
         foreach ($postazioni_scontrino as $p) {
             ////$dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', Categoria::where('postazione_id', $p->id)->get()->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', $p->categorie->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $p->setAttribute('dettagli', $dettaglip);
         }
-        error_log("2");
-        $postazioni_no_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', null)->orderBy('ordine')->get();
+        $postazioni_no_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', "!=", true)->orderBy('ordine')->get();
         foreach ($postazioni_no_scontrino as $p) {
-            $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', Categoria::where('postazione_id', $p->id)->get()->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
+            $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', $p->categorie->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $p->setAttribute('dettagli', $dettaglip);
         }
-        error_log("3");
         if ($tipo == "tutto" || $tipo == "scontrino-con-postazioni")
             $this->printScontrino($comanda, $postazioni_scontrino);
         elseif ($tipo == "scontrino-senza-postazioni")
@@ -59,7 +57,6 @@ class StampaScontrino
             $this->printScontrino($comanda, $postazioni_scontrino, true);
             $this->printPostazioni($comanda, $postazioni_no_scontrino, true);
         }
-        error_log("4");
     }
 
     private function printScontrino(Comanda $comanda, $postazioni_scontrino, $stampa_cassa_attiva = false)
@@ -70,26 +67,30 @@ class StampaScontrino
             throw new ItemNotFoundException();
         $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : $comanda->cassa->stampante;
         try {
-            $connector = new NetworkPrintConnector($stampante->ip, 9100, 1);
+            $connector = new NetworkPrintConnector($stampante->ip, 9100, 2);
             $printer = new Printer($connector);
             //$printer->setFont(Printer::FONT_B);
             $items = array();
             $subtotale = 0;
             $sconto = 0;
-            foreach ($comanda->dettagli as $dettaglio) {
+            foreach ($comanda->comande_dettagli as $dettaglio) {
                 $subtotale += $dettaglio->prodotto->prezzo * $dettaglio->quantita;
                 $sconto += $dettaglio->sconto_unitario * $dettaglio->quantita;
                 $item = new Item($dettaglio->quantita, $dettaglio->prodotto->nome, $dettaglio->prodotto->prezzo * $dettaglio->quantita);
                 array_push($items, $item);
             }
+            $sconto += $comanda->sconto + $comanda->buoni;
             $item_subtotale = new Item('', 'Subtotale', $subtotale);
-            $item_sconto = $sconto > 0 ? new Item('', 'Subtotale', $subtotale) : null;
+            $item_sconto = $sconto > 0 ? new Item('', 'Sconto', -$sconto) : null;
 
             /* Date is kept the same for testing */
             $dataor_attuale = date('d/m/Y H:i:s');
 
             /* Nome dell'evento */
             $printer->setJustification(Printer::JUSTIFY_CENTER);
+            $tux = EscposImage::load($_SERVER['DOCUMENT_ROOT']."/images/logomedio.bmp", true);    
+            $printer -> bitImage($tux);
+            $printer->feed();
             $printer->setEmphasis(true);
             $printer->text($comanda->evento->nome . ' - ' . date("d/m/Y", strtotime($comanda->evento->data)));
             $printer->setEmphasis(false);
@@ -126,6 +127,13 @@ class StampaScontrino
             $printer->textRaw(chr($stampante->codice_euro));
             $printer->text(str_pad(number_format($subtotale - $sconto, 2), 7, ' ', STR_PAD_LEFT));
             $printer->selectPrintMode();
+            $printer->feed();
+            $printer->text("Pagamenti:");
+            $printer->feed();            
+            if ($comanda->su_conto && $comanda->conto){
+                $su_conto_item = new Item("", "Su conto " . $comanda->conto->nome, $comanda->su_conto);
+                $printer->text($su_conto_item->getAsString(48)); 
+            }
             $printer->feed(2);
 
             $printer->setJustification(Printer::JUSTIFY_CENTER);
@@ -168,7 +176,7 @@ class StampaScontrino
         foreach ($postazioni_no_scontrino as $p) {
             $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : ($p->stampante ?? $comanda->cassa->stampante);
             try {
-                $connector = new NetworkPrintConnector($stampante->ip, 9100, 1);
+                $connector = new NetworkPrintConnector($stampante->ip, 9100, 2);
                 $printer = new Printer($connector);
                 $this->printPostazione($comanda, $p, $printer);
                 $printer->cut();
@@ -230,6 +238,7 @@ class StampaScontrino
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $printer->text(date('d/m/Y H:i:s'));
         $printer->feed();
+        $printer->qrCode("abcdefjh1322390480-foiduy3240",Printer::QR_ECLEVEL_H, 5);
         $printer->feed();
         $printer->feed();
     }
