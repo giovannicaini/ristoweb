@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Scopes\EventoScope;
+use App\Observers\AddEventoIdObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

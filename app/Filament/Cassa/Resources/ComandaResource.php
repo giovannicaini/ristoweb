@@ -2,12 +2,14 @@
 
 namespace App\Filament\Cassa\Resources;
 
+use App\Actions\StampaScontrino;
 use App\Filament\Cassa\Resources\ComandaResource\Pages;
 use App\Filament\Cassa\Resources\ComandaResource\RelationManagers;
 use App\Models\Categoria;
 use App\Models\Comanda;
 use Faker\Core\Number;
 use Filament\Forms;
+use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\Actions\Action as ActionsAction;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
@@ -191,7 +193,17 @@ class ComandaResource extends Resource
 
                 ])
                     ->columnSpan(2)
-                    ->columns(6)
+                    ->columns(6),
+                Actions::make([
+                    ActionsAction::make('stampaAll')
+                        ->label('Stampa Tutto')
+                        //->color(950)
+                        ->requiresConfirmation()
+                        ->action(function (Model $record) {
+                            StampaScontrino::run($record, 'tutto');
+                        }),
+                ])
+
             ]);
     }
 

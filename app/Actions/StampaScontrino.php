@@ -15,6 +15,7 @@ use Mike42\Escpos\Printer;
 use App\Helpers\Item;
 use App\Models\Categoria;
 use App\Models\Prodotto;
+use Filament\Notifications\Notification;
 
 class StampaScontrino
 {
@@ -29,24 +30,25 @@ class StampaScontrino
         if (!in_array($tipo, $tipi))
             throw new ItemNotFoundException();
         $postazioni_id = array();
-        foreach ($comanda->dettagli as $dettaglio) {
+        foreach ($comanda->comande_dettagli as $dettaglio) {
             $postazione = $dettaglio->prodotto->categoria->postazione_id;
             if (!in_array($postazione, $postazioni_id))
                 array_push($postazioni_id, $postazione);
         }
-
+        error_log("1");
         $postazioni_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', true)->orderBy('ordine')->get();
         foreach ($postazioni_scontrino as $p) {
             ////$dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', Categoria::where('postazione_id', $p->id)->get()->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', $p->categorie->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $p->setAttribute('dettagli', $dettaglip);
         }
+        error_log("2");
         $postazioni_no_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', null)->orderBy('ordine')->get();
         foreach ($postazioni_no_scontrino as $p) {
             $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', Categoria::where('postazione_id', $p->id)->get()->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $p->setAttribute('dettagli', $dettaglip);
         }
-
+        error_log("3");
         if ($tipo == "tutto" || $tipo == "scontrino-con-postazioni")
             $this->printScontrino($comanda, $postazioni_scontrino);
         elseif ($tipo == "scontrino-senza-postazioni")
@@ -57,6 +59,7 @@ class StampaScontrino
             $this->printScontrino($comanda, $postazioni_scontrino, true);
             $this->printPostazioni($comanda, $postazioni_no_scontrino, true);
         }
+        error_log("4");
     }
 
     private function printScontrino(Comanda $comanda, $postazioni_scontrino, $stampa_cassa_attiva = false)
@@ -66,8 +69,8 @@ class StampaScontrino
         if (!$comanda->cassa)
             throw new ItemNotFoundException();
         $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : $comanda->cassa->stampante;
-        $connector = new NetworkPrintConnector($stampante->ip, 9100);
         try {
+            $connector = new NetworkPrintConnector($stampante->ip, 9100, 1);
             $printer = new Printer($connector);
             //$printer->setFont(Printer::FONT_B);
             $items = array();
@@ -142,9 +145,15 @@ class StampaScontrino
             $printer->cut();
             $printer->pulse();
         } catch (\Exception $e) {
-            echo $e->getMessage();
+            Notification::make()
+                ->title('Stampa Scontrino ' . $comanda->cassa->nome . ' (' . $comanda->cassa->stampante->descrizione . ') non avvenuta')
+                ->body($e->getMessage())
+                ->danger()
+                ->persistent()
+                ->send();
         } finally {
-            $printer->close();
+            if (isset($printer))
+                $printer->close();
         }
     }
 
@@ -158,15 +167,21 @@ class StampaScontrino
 
         foreach ($postazioni_no_scontrino as $p) {
             $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : ($p->stampante ?? $comanda->cassa->stampante);
-            $connector = new NetworkPrintConnector($stampante->ip, 9100);
             try {
+                $connector = new NetworkPrintConnector($stampante->ip, 9100, 1);
                 $printer = new Printer($connector);
                 $this->printPostazione($comanda, $p, $printer);
                 $printer->cut();
             } catch (\Exception $e) {
-                echo $e->getMessage();
+                Notification::make()
+                    ->title('Stampa Postazione ' . $p->nome . ' (' . $stampante->descrizione . ') non avvenuta')
+                    ->body($e->getMessage())
+                    ->danger()
+                    ->persistent()
+                    ->send();
             } finally {
-                $printer->close();
+                if (isset($printer))
+                    $printer->close();
             }
         }
     }

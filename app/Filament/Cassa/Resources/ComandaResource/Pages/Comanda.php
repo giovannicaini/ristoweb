@@ -2,6 +2,7 @@
 
 namespace App\Filament\Cassa\Resources\ComandaResource\Pages;
 
+use App\Actions\StampaScontrino;
 use App\Filament\Cassa\Loggers\ComandaLogger;
 use App\Filament\Cassa\Resources\ComandaResource;
 use App\Models\ComandaDettaglio;
@@ -30,7 +31,7 @@ use function Filament\Support\is_app_url;
 
 class Comanda extends EditRecord
 {
-    use LogEditRecord; // <--- here
+    //use LogEditRecord; // <--- here
 
     public ?array $dataTotali = [];
 
@@ -214,10 +215,24 @@ class Comanda extends EditRecord
             ->keyBindings(['f2']);
     }
 
+    protected function getStampaTuttoAction(): FilamentActionsAction
+    {
+        return FilamentActionsAction::make('stampaTutto')
+            ->label('Stampa Tutto [F3]')
+            //->submit('saveTotali')
+            ->requiresConfirmation()
+            ->keyBindings(['f3'])
+            ->action(function ($state): void {
+                error_log("PIPPO");
+                StampaScontrino::run(Comanda::find($state["id"]), 'tutto');
+            });
+    }
+
     protected function getFormTotaliActions(): array
     {
         return [
             $this->getSalvaFormTotaliAction(),
+            $this->getStampaTuttoAction()
             //$this->getCancelFormAction(),
         ];
     }

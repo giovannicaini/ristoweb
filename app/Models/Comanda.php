@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use App\Models\Scopes\EventoScope;
+use App\Observers\AddEventoIdObserver;
 use Attribute;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute as CastsAttribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,6 +42,11 @@ class Comanda extends Model
     public function conto(): BelongsTo
     {
         return $this->belongsTo(Conto::class);
+    }
+
+    public function cassa(): BelongsTo
+    {
+        return $this->belongsTo(Cassa::class);
     }
 
     public function comande_dettagli(): HasMany
