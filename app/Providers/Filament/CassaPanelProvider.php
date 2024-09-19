@@ -29,6 +29,8 @@ class CassaPanelProvider extends PanelProvider
         return $panel
             ->id('cassa')
             ->path('cassa')
+            ->login()
+            
             ->colors([
                 'primary' => Color::Amber,
             ])

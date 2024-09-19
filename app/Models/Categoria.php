@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ScopedBy([EventoScope::class])]
+#[ObservedBy([AddEventoIdObserver::class])]
 class Categoria extends Model
 {
     use HasFactory, SoftDeletes;
