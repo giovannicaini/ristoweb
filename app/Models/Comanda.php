@@ -54,6 +54,11 @@ class Comanda extends Model
         return $this->hasMany(ComandaDettaglio::class);
     }
 
+    public function pagamenti(): HasMany
+    {
+        return $this->hasMany(Pagamento::class);
+    }
+
     public function numero_coperti()
     {
         $coperto = ComandaDettaglio::where('prodotto_id', Prodotto::where('coperto', true)->first())->first();

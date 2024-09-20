@@ -15,16 +15,19 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+	return view('welcome');
 });
 
 
 Route::get('/login', function () {
-    return redirect(route('filament.admin.auth.login'));
+	return redirect(route('filament.admin.auth.login'));
 })->name('login');
+Route::get('/qr', function () {
+	return view('qr');
+})->name('qr');
 
 
-Route::prefix('/comande')->group(function() {
+Route::prefix('/comande')->group(function () {
 	Route::get('', [RistoController::class, 'pageComande']);
 	Route::get('/prova', [RistoController::class, 'pageComande2']);
 	Route::get('/lista', [RistoController::class, 'pdfLista']);
@@ -34,13 +37,8 @@ Route::prefix('/comande')->group(function() {
 
 })->middleware('auth');
 
-Route::prefix('/qr')->group(function() {
-	Route::get('', [RistoController::class, 'pageQr']);
-	//Route::get('/errori', [RistoController::class, 'pageErroreGenitori');
 
-});
-
-Route::prefix('/comanda')->group(function() {
+Route::prefix('/comanda')->group(function () {
 	Route::get('/{comanda_id}/pdf', [RistoController::class, 'pdfComanda']);
 	Route::get('/{comanda_id}/stampa', [RistoController::class, 'pageComanda2']);
 	Route::get('/{comanda_id}', [RistoController::class, 'pageComanda']);
@@ -50,7 +48,7 @@ Route::prefix('/comanda')->group(function() {
 
 })->middleware('auth');
 
-Route::prefix('/modals/comande')->group(function() {
+Route::prefix('/modals/comande')->group(function () {
 	Route::get('/nuova-comanda', [RistoController::class, 'modalNuovaComanda']);
 	Route::get('/cambia-evento-corrente', [RistoController::class, 'modalCambiaEventoCorrente']);
 	Route::get('/cambia-cassa-corrente', [RistoController::class, 'modalCambiaCassaCorrente']);
@@ -59,7 +57,7 @@ Route::prefix('/modals/comande')->group(function() {
 	//Route::get('/resetpwgenitore', [RistoController::class, 'modalResetPasswordGenitore');
 })->middleware('auth');
 
-Route::prefix('/api/comande')->group(function() {
+Route::prefix('/api/comande')->group(function () {
 	Route::post('/nuova-comanda', [RistoController::class, 'apiNuovaComanda']);
 	Route::delete('/elimina-comanda/{comanda_id}', [RistoController::class, 'apiEliminaComanda']);
 	Route::post('/cambia-evento-corrente', [RistoController::class, 'apiCambiaEventoCorrente']);
@@ -73,7 +71,7 @@ Route::prefix('/api/comande')->group(function() {
 
 	//Route::get('/resetpwgenitore', [RistoController::class, 'modalResetPasswordGenitore');
 })->middleware('auth');
-Route::prefix('/api/comanda')->group(function(){
+Route::prefix('/api/comanda')->group(function () {
 	Route::post('/{comanda_id}/stampa/{tipo}', [RistoController::class, 'apiStampaComanda']);
 	//Route::get('/resetpwgenitore', [RistoController::class, 'modalResetPasswordGenitore');
 })->middleware('auth');

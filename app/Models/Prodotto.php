@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Models\Scopes\EventoScope;
+use App\Observers\AddEventoIdObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -31,14 +33,5 @@ class Prodotto extends Model
     public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-        static::creating(function (Prodotto $model) {
-            if (!$model->evento_id)
-                $model->evento_id = Evento::where('attivo', true)->first()->id;
-        });
     }
 }

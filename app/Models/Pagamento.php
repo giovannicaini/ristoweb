@@ -9,29 +9,25 @@ use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ScopedBy([EventoScope::class])]
 #[ObservedBy([AddEventoIdObserver::class])]
-class Postazione extends Model
+class Pagamento extends Model
 {
-    use HasFactory, SoftDeletes;
-
-    protected $table = 'postazioni';
-
-    public function categorie(): HasMany
-    {
-        return $this->hasMany(Categoria::class);
-    }
+    use HasFactory;
 
     public function evento(): BelongsTo
     {
         return $this->belongsTo(Evento::class);
     }
 
-    public function stampante(): BelongsTo
+    public function tipologia_pagamento(): BelongsTo
     {
-        return $this->belongsTo(Stampante::class);
+        return $this->belongsTo(TipologiaPagamento::class);
+    }
+
+    public function comanda(): BelongsTo
+    {
+        return $this->belongsTo(Comanda::class);
     }
 }

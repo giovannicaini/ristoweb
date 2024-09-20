@@ -38,6 +38,16 @@ class Evento extends Model
         return $this->hasMany(Prodotto::class);
     }
 
+    public function pagamenti(): HasMany
+    {
+        return $this->hasMany(Pagamento::class);
+    }
+
+    public function tipologie_pagamenti(): HasMany
+    {
+        return $this->hasMany(TipologiaPagamento::class);
+    }
+
     public static function Corrente()
     {
         return self::where('attivo', true)->first()->id;
