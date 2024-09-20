@@ -20,6 +20,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -224,17 +225,7 @@ class ComandaResource extends Resource
                         ->columnStart(6),
                 ])
                     ->columnSpan(2)
-                    ->columns(6),
-                Actions::make([
-                    ActionsAction::make('stampaAll')
-                        ->label('Stampa Tutto')
-                        //->color(950)
-                        ->requiresConfirmation()
-                        ->action(function (Model $record) {
-                            StampaScontrino::run($record, 'tutto');
-                        }),
-                ])
-
+                    ->columns(6)
             ]);
     }
 
@@ -433,7 +424,8 @@ class ComandaResource extends Resource
     {
         return [
             RelationManagers\ComandeDettagliRelationManager::class,
-            RelationManagers\ComandePagamentiRelationManager::class,
+            RelationManagers\ComandePagamentiRelationManager::class
+
         ];
     }
 

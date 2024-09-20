@@ -100,7 +100,7 @@ class Comanda extends Model
 
     public function getTotaleDaPagareAttribute()
     {
-        return $this->totale_finale - $this->totale_pagamenti;
+        return $this->totale_finale - $this->totale_pagato;
     }
 
 

@@ -14,6 +14,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\Modal\Actions\Action;
 use Filament\Forms\Components\Actions\Action as ActionsAction;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Resources\Pages\EditRecord;
@@ -34,7 +35,10 @@ class Comanda extends EditRecord
     //use LogEditRecord; // <--- here
 
     public ?array $dataTotali = [];
-
+    public function getContentTabLabel(): ?string
+    {
+        return "Modifica Comanda";
+    }
     protected static string $resource = ComandaResource::class;
     protected static string $layout = 'no-menu';
     public static string $view = 'comanda';
@@ -181,6 +185,7 @@ class Comanda extends EditRecord
         $delete = array_diff($old_prodotti_id, $new_prodotti_id);
         ComandaDettaglio::where('comanda_id', $record->id)->whereIn('prodotto_id', $delete)->delete();
         //$record->update($data);
+        $this->activeRelationManager = 0;
         $this->dispatch('refreshRelation');
         ComandaLogger::make($record)->created();
         return $record;
@@ -210,9 +215,9 @@ class Comanda extends EditRecord
     protected function getSalvaFormTotaliAction(): FilamentActionsAction
     {
         return FilamentActionsAction::make('saveTotali')
-            ->label('Salva Totale [F2]')
+            ->label('Salva Totali e vai al Pagamento [F1]')
             ->submit('saveTotali')
-            ->keyBindings(['f2']);
+            ->keyBindings(['f1']);
     }
 
     protected function getStampaTuttoAction(): FilamentActionsAction
@@ -232,7 +237,7 @@ class Comanda extends EditRecord
     {
         return [
             $this->getSalvaFormTotaliAction(),
-            $this->getStampaTuttoAction()
+            //$this->getStampaTuttoAction()
             //$this->getCancelFormAction(),
         ];
     }
@@ -280,6 +285,7 @@ class Comanda extends EditRecord
         if ($shouldRedirect && ($redirectUrl = $this->getRedirectUrl())) {
             $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
         }
+        $this->activeRelationManager = 1;
     }
     protected function getSavedNotificationTitle(): ?string
     {
@@ -311,6 +317,11 @@ class Comanda extends EditRecord
     }
 
     protected function hasFullWidthFormTotaliActions(): bool
+    {
+        return true;
+    }
+
+    public function hasCombinedRelationManagerTabsWithContent(): bool
     {
         return true;
     }

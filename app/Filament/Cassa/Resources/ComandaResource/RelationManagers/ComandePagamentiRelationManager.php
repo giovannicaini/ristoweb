@@ -2,6 +2,7 @@
 
 namespace App\Filament\Cassa\Resources\ComandaResource\RelationManagers;
 
+use App\Actions\StampaScontrino;
 use Closure;
 use Filament\Forms;
 use Livewire\Component;
@@ -74,7 +75,17 @@ class ComandePagamentiRelationManager extends RelationManager
                 Tables\Filters\TrashedFilter::make()
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label("Inserisci nuovo pagamento"),
+                Tables\Actions\CreateAction::make()->label("Inserisci nuovo pagamento [F1]")
+                    ->keyBindings(['f1']),
+                Tables\Actions\Action::make()->make('stampaAll')
+                    ->label('Stampa Tutto [F2]')
+                    ->modalHeading('Stampa Scontrino alla Cassa e Comande nelle varie postazioni')
+                    ->requiresConfirmation()
+                    ->action(function () use ($ownerRecord) {
+                        StampaScontrino::run($ownerRecord, 'tutto');
+                    })
+                    ->keyBindings(['f2'])
+                    ->modalIcon('heroicon-o-printer')
             ])
             ->actions([
                 Tables\Actions\EditAction::make()

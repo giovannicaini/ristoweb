@@ -20,7 +20,7 @@ class ComandeDettagliRelationManager extends RelationManager
 {
     protected static string $relationship = 'comande_dettagli';
 
-    protected static ?string $title = 'Riepilogo prodotti inseriti in comanda (cliccare sulla riga per inserire eventuali sconti)';
+    protected static ?string $title = 'Riepilogo prodotti inseriti in comanda';
 
     protected $listeners = ['refreshRelation' => '$refresh'];
 

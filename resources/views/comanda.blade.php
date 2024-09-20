@@ -19,7 +19,20 @@
             />
         </x-filament-panels::form>
     @endcapture
+    @capture($formTotali)
+    <x-filament-panels::form
+        id="form-totali"
+        :wire:key="$this->getId() . '.forms.' . $this->getFormTotaliStatePath()"
+        wire:submit="saveTotali"
+    >
+        {{ $this->formTotali }}
 
+        <x-filament-panels::form.actions
+            :actions="$this->getFormTotaliActions()"
+            :full-width="$this->hasFullWidthFormTotaliActions()"
+        />
+    </x-filament-panels::form>
+    @endcapture
     @php
         $relationManagers = $this->getRelationManagers();
         $hasCombinedRelationManagerTabsWithContent = $this->hasCombinedRelationManagerTabsWithContent();
@@ -30,6 +43,7 @@
     @endif
 
     @if (count($relationManagers))
+       
         <x-filament-panels::resources.relation-managers
             :active-locale="isset($activeLocale) ? $activeLocale : null"
             :active-manager="$this->activeRelationManager ?? ($hasCombinedRelationManagerTabsWithContent ? null : array_key_first($relationManagers))"
@@ -46,22 +60,12 @@
                 </x-slot>
             @endif
         </x-filament-panels::resources.relation-managers>
+        @if ($this->activeRelationManager === '0')
+        {{ $formTotali() }}
     @endif
-    @capture($formTotali)
-    <x-filament-panels::form
-        id="form-totali"
-        :wire:key="$this->getId() . '.forms.' . $this->getFormTotaliStatePath()"
-        wire:submit="saveTotali"
-    >
-        {{ $this->formTotali }}
+    @endif
+    
 
-        <x-filament-panels::form.actions
-            :actions="$this->getFormTotaliActions()"
-            :full-width="$this->hasFullWidthFormTotaliActions()"
-        />
-    </x-filament-panels::form>
-    @endcapture
-
-    {{ $formTotali() }}
+   
     <x-filament-panels::page.unsaved-data-changes-alert />
 </x-filament-panels::page>
