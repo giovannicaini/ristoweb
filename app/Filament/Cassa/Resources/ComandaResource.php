@@ -195,7 +195,7 @@ class ComandaResource extends Resource
                         ->numeric()
                         //->mask(RawJs::make('$money($input)'))
                         ->default(0.00)
-                        ->hidden(fn(Get $get) => $get("conto_id")==null)
+                        ->hidden(fn(Get $get) => $get("conto_id") == null)
                         ->extraInputAttributes(["class" => "text-right"])
                         ->afterStateHydrated(function (TextInput $component, $state) {
                             if ($state)
@@ -216,7 +216,7 @@ class ComandaResource extends Resource
                         ->disabled()
                         ->live()
                         ->extraInputAttributes(["class" => "text-right"])
-                        ->hidden(fn(Get $get) => $get("conto_id")==null)
+                        ->hidden(fn(Get $get) => $get("conto_id") == null)
                         ->afterStateHydrated(function (TextInput $component, Get $get) {
                             $component->state(number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
                         })
@@ -433,6 +433,7 @@ class ComandaResource extends Resource
     {
         return [
             RelationManagers\ComandeDettagliRelationManager::class,
+            RelationManagers\ComandePagamentiRelationManager::class,
         ];
     }
 

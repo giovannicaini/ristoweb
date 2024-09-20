@@ -24,10 +24,10 @@ class Comanda extends Model
     protected $table = 'comande';
 
     //Add extra attribute
-    protected $attributes = ['totale_prodotti_senza_sconto', 'totale_prodotti_con_sconto', 'totale_sconto_prodotti'];
+    protected $attributes = ['totale_prodotti_senza_sconto', 'totale_prodotti_con_sconto', 'totale_sconto_prodotti', 'totale_finale', 'totale_da_pagare', 'totale_pagato'];
 
     //Make it available in the json response
-    protected $appends = ['totale_prodotti_senza_sconto', 'totale_prodotti_con_sconto', 'totale_sconto_prodotti'];
+    protected $appends = ['totale_prodotti_senza_sconto', 'totale_prodotti_con_sconto', 'totale_sconto_prodotti', 'totale_finale', 'totale_da_pagare', 'totale_pagato'];
 
     public function evento(): BelongsTo
     {
@@ -87,6 +87,24 @@ class Comanda extends Model
 
         return $this->totale_prodotti_senza_sconto - $this->totale_sconto_prodotti;
     }
+
+    public function getTotaleFinaleAttribute()
+    {
+        return $this->totale_prodotti_con_sconto - $this->su_conto;
+    }
+
+    public function getTotalePagatoAttribute()
+    {
+        return $this->pagamenti->sum('importo');
+    }
+
+    public function getTotaleDaPagareAttribute()
+    {
+        return $this->totale_finale - $this->totale_pagamenti;
+    }
+
+
+
 
     public function getEventoId()
     {
