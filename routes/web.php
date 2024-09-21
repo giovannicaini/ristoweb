@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\RistoController;
+use App\Models\ComandaPostazione;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,9 +23,20 @@ Route::get('/', function () {
 Route::get('/login', function () {
 	return redirect(route('filament.admin.auth.login'));
 })->name('login');
+
 Route::get('/qr', function () {
 	return view('qr');
 })->name('qr');
+
+Route::get('qr/{cp:uuid}', function (ComandaPostazione $cp) {
+	if ($cp->delivered)
+		return "La comanda risulta già consegnata alle " . Date("H:i:s", strtotime($cp->delivered_at));
+	else {
+		$cp->delivered_at = now();
+		$cp->save();
+		return "Comanda " . $cp->comanda->numero . " contrassegnata come consegnata";
+	}
+});
 
 
 Route::prefix('/comande')->group(function () {

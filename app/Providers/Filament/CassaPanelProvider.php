@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Cassa\Widgets\SelectCassaWidget;
 use App\Filament\Resources\EventoResource\Widgets\EventoAttivoWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -30,19 +31,19 @@ class CassaPanelProvider extends PanelProvider
             ->id('cassa')
             ->path('cassa')
             ->login()
-            
+
             ->colors([
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Cassa/Resources'), for: 'App\\Filament\\Cassa\\Resources')
             ->discoverPages(in: app_path('Filament/Cassa/Pages'), for: 'App\\Filament\\Cassa\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                //Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Cassa/Widgets'), for: 'App\\Filament\\Cassa\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-                EventoAttivoWidget::class
+                SelectCassaWidget::class
             ])
             ->middleware([
                 EncryptCookies::class,

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -33,5 +34,10 @@ class Postazione extends Model
     public function stampante(): BelongsTo
     {
         return $this->belongsTo(Stampante::class);
+    }
+
+    public function comande(): BelongsToMany
+    {
+        return $this->belongsToMany(Comanda::class, ComandaPostazione::class);
     }
 }

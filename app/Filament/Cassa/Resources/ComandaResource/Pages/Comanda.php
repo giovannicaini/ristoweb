@@ -3,8 +3,10 @@
 namespace App\Filament\Cassa\Resources\ComandaResource\Pages;
 
 use App\Actions\StampaScontrino;
+use App\Actions\SyncComandePostazioni;
 use App\Filament\Cassa\Loggers\ComandaLogger;
 use App\Filament\Cassa\Resources\ComandaResource;
+use App\Models\Comanda as ModelsComanda;
 use App\Models\ComandaDettaglio;
 use App\Models\Prodotto;
 use Closure;
@@ -13,6 +15,8 @@ use Filament\Actions\Action as FilamentActionsAction;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Modal\Actions\Action;
 use Filament\Forms\Components\Actions\Action as ActionsAction;
+use Filament\Forms\Components\Builder;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
@@ -22,6 +26,7 @@ use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Filament\Tables\Actions\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use InvalidArgumentException;
 use Livewire\Attributes\On;
 use Lorisleiva\Actions\Action as LorisleivaActionsAction;
@@ -228,7 +233,6 @@ class Comanda extends EditRecord
             ->requiresConfirmation()
             ->keyBindings(['f3'])
             ->action(function ($state): void {
-                error_log("PIPPO");
                 StampaScontrino::run(Comanda::find($state["id"]), 'tutto');
             });
     }
@@ -282,6 +286,8 @@ class Comanda extends EditRecord
             $this->getSavedTotaliNotification()?->send();
         }
 
+        SyncComandePostazioni::run(ModelsComanda::find($this->record["id"]));
+
         if ($shouldRedirect && ($redirectUrl = $this->getRedirectUrl())) {
             $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
         }
@@ -324,5 +330,26 @@ class Comanda extends EditRecord
     public function hasCombinedRelationManagerTabsWithContent(): bool
     {
         return true;
+    }
+
+    protected function getActions(): array
+    {
+        return [
+            \Filament\Actions\CreateAction::make()
+                ->label("Crea Nuova Comanda [F3]")
+                ->model(Comanda::class)
+                ->form([
+                    TextInput::make('nominativo')
+                        ->required()
+                        ->maxLength(255),
+                ])
+                ->keyBindings(["f3"])
+                ->action(function (array $data): void {
+                    $comanda = new \App\Models\Comanda();
+                    $comanda->nominativo = $data["nominativo"];
+                    $comanda->save();
+                    redirect()->route('filament.cassa.resources.comandas.comanda', ['record' => $comanda]);
+                })
+        ];
     }
 }

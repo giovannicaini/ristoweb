@@ -30,11 +30,10 @@ class ComandaDettaglio extends Model
     protected static function boot()
     {
         parent::boot();
-     
+
         // Order by name ASC
         static::addGlobalScope('order', function (EloquentBuilder $builder) {
             $builder->orderBy('prodotto_id', 'asc');
         });
     }
-
 }

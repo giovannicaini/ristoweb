@@ -14,7 +14,7 @@ class EventoScope implements Scope
      */
     public function apply(Builder $builder, Model $model): void
     {
-
-        $builder->where('evento_id', Evento::Corrente());
+        $column_name = $model->getTable() . '.evento_id';
+        $builder->where($column_name, Evento::Corrente());
     }
 }

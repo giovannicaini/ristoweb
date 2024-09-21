@@ -15,7 +15,6 @@ use Mike42\Escpos\Printer;
 use Mike42\Escpos\EscposImage;
 use App\Helpers\Item;
 use App\Models\Categoria;
-use App\Models\ComandaPostazione;
 use App\Models\Prodotto;
 use Filament\Notifications\Notification;
 
@@ -27,25 +26,23 @@ class StampaScontrino
     {
         $cassiere = User::find($comanda->cassiere_id);
         if (!$comanda)
-            throw new \Exception("Comanda non trovata");
-        $tipi = array("tutto", "scontrino-con-postazioni", "postazioni", "scontrino-senza-postazioni", "tutto_in_cassa_attiva", "postazione", "messaggio");
+            throw new ItemNotFoundException();
+        $tipi = array("tutto", "scontrino-con-postazioni", "postazioni", "scontrino-senza-postazioni", "tutto_in_cassa_attiva");
         if (!in_array($tipo, $tipi))
-            throw new \Exception("Tipo stampa non valido");
-        if (($tipo == "postazione" || $tipo == "messaggio") && !$postazione_id)
-            throw new \Exception("Manca l'id postazione su cui stampare");
-        if ($tipo == "messaggio" && !$messaggio)
-            throw new \Exception("Manca il messaggio da stampare");
+            throw new ItemNotFoundException();
         $postazioni_id = array();
-
-        $postazioni_scontrino = $comanda->postazioni->where('accoda_a_scontrino', true)->sortBy('ordine');
-        //$postazioni_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', true)->orderBy('ordine')->get();
+        foreach ($comanda->comande_dettagli as $dettaglio) {
+            $postazione = $dettaglio->prodotto->categoria->postazione_id;
+            if ($postazione && !in_array($postazione, $postazioni_id))
+                array_push($postazioni_id, $postazione);
+        }
+        $postazioni_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', true)->orderBy('ordine')->get();
         foreach ($postazioni_scontrino as $p) {
             ////$dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', Categoria::where('postazione_id', $p->id)->get()->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', $p->categorie->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $p->setAttribute('dettagli', $dettaglip);
         }
-        $postazioni_no_scontrino = $comanda->postazioni->where('accoda_a_scontrino', "!=", true)->sortBy('ordine');
-        //$postazioni_no_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', "!=", true)->orderBy('ordine')->get();
+        $postazioni_no_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', "!=", true)->orderBy('ordine')->get();
         foreach ($postazioni_no_scontrino as $p) {
             $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', $p->categorie->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $p->setAttribute('dettagli', $dettaglip);
@@ -136,11 +133,6 @@ class StampaScontrino
             if ($comanda->su_conto && $comanda->conto) {
                 $su_conto_item = new Item("", "Su conto " . $comanda->conto->nome, $comanda->su_conto);
                 $printer->text($su_conto_item->getAsString(48));
-                $printer->feed();
-            }
-            foreach ($comanda->pagamenti as $pagamento) {
-                $printer->text(new Item("", $pagamento->tipologia_pagamento->nome, $pagamento->importo));
-                $printer->feed();
             }
             $printer->feed(2);
 
@@ -183,17 +175,11 @@ class StampaScontrino
 
         foreach ($postazioni_no_scontrino as $p) {
             $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : ($p->stampante ?? $comanda->cassa->stampante);
-            $comanda_postazione = $comanda->comande_postazioni->where('postazione_id', $p->id)->first();
             try {
-                if ($comanda_postazione->printed) {
-                    throw new \Exception("La comanda per la postazione $p->nome è già stata stampata. Per procedere ad una nuova stampa e annullare la precedente, andare in 'Stato Stampe Singole Postazioni'");
-                }
                 $connector = new NetworkPrintConnector($stampante->ip, 9100, 2);
                 $printer = new Printer($connector);
-                $this->printPostazione($comanda, $p, $printer, $comanda_postazione);
+                $this->printPostazione($comanda, $p, $printer);
                 $printer->cut();
-                $comanda_postazione->printed_at = now();
-                $comanda_postazione->save();
             } catch (\Exception $e) {
                 Notification::make()
                     ->title('Stampa Postazione ' . $p->nome . ' (' . $stampante->descrizione . ') non avvenuta')
@@ -204,13 +190,11 @@ class StampaScontrino
             } finally {
                 if (isset($printer))
                     $printer->close();
-                $comanda_postazione->printed_at = now();
-                $comanda_postazione->save();
             }
         }
     }
 
-    private function printPostazione($comanda, $postazione, $printer, $comanda_postazione)
+    private function printPostazione($comanda, $postazione, $printer)
     {
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
@@ -254,9 +238,7 @@ class StampaScontrino
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $printer->text(date('d/m/Y H:i:s'));
         $printer->feed();
-        $printer->text("SCANSIONARE IL QR CODE PRIMA DI CONSEGNARE!");
-        $printer->feed();
-        $printer->qrCode($comanda_postazione->uuid, Printer::QR_ECLEVEL_H, 5);
+        $printer->qrCode("abcdefjh1322390480-foiduy3240", Printer::QR_ECLEVEL_H, 5);
         $printer->feed();
         $printer->feed();
     }

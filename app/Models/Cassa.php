@@ -28,9 +28,7 @@ class Cassa extends Model
     ///// DA FARE CON LA SESSION
     public static function Corrente()
     {
-        if (session('cassa_corrente_id'))
-            return self::find(session('cassa_corrente_id'))->id;
-        else
-            return null;
+
+        return session('cassa_corrente_id', null);
     }
 }

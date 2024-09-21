@@ -50,6 +50,7 @@ class Evento extends Model
 
     public static function Corrente()
     {
-        return self::where('attivo', true)->first()->id;
+        return session('evento_corrente_id', null);
+        //return self::where('attivo', true)->first()->id;
     }
 }

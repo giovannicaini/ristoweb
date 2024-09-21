@@ -424,7 +424,8 @@ class ComandaResource extends Resource
     {
         return [
             RelationManagers\ComandeDettagliRelationManager::class,
-            RelationManagers\ComandePagamentiRelationManager::class
+            RelationManagers\ComandePagamentiRelationManager::class,
+            RelationManagers\ComandePostazioniRelationManager::class
 
         ];
     }
@@ -433,7 +434,7 @@ class ComandaResource extends Resource
     {
         return [
             'index' => Pages\ListComandas::route('/'),
-            'create' => Pages\CreateComanda::route('/create'),
+            //'create' => Pages\CreateComanda::route('/create'),
             //'edit' => Pages\EditComanda::route('/{record}/edit'),
             'comanda' => Pages\Comanda::route('/{record}/comanda'),
 
