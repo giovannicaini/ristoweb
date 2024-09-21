@@ -29,15 +29,14 @@ Route::get('/qr', function () {
 })->name('qr');
 
 Route::get('qr/{uuid}', function ($uuid) {
-	$cp = ComandaPostazione::where('uuid',$uuid)->withoutGlobalScopes()->first();
+	$cp = ComandaPostazione::where('uuid', $uuid)->withoutGlobalScopes()->first();
 	if ($cp && $cp->delivered)
 		return "La comanda risulta già consegnata alle " . Date("H:i:s", strtotime($cp->delivered_at));
-	else if ($cp){
+	else if ($cp) {
 		$cp->delivered_at = now();
 		$cp->save();
-		return "Comanda " . $cp->comanda->numero . " contrassegnata come consegnata";
-	}
-	else
+		return "Comanda contrassegnata come consegnata";
+	} else
 		return "Comanda non trovata";
 });
 
