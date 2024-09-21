@@ -30,9 +30,11 @@
         var uuid = result.data;
         if (uuid){
             var xhr = new XMLHttpRequest();
-            var url = "http://10.19.4.101/qr/"+uuid;
+            var url = "https://feste.parrocchiasantateresa.it/qr/"+uuid;
             //alert(url);
             xhr.open('GET', url);
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhr.overrideMimeType("text");
             xhr.onreadystatechange = function () {
                 var DONE = 4; // stato 4 indica che la richiesta è stata effettuata.
                 var OK = 200; // se la HTTP response ha stato 200 vuol dire che ha avuto successo.
