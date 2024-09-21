@@ -30,7 +30,7 @@
         var uuid = result.data;
         if (uuid){
             var xhr = new XMLHttpRequest();
-            var url = "http://10.19.4.101/qr/"+uuid;
+            var url = "/qr/"+uuid;
             //alert(url);
             xhr.open('GET', url);
             xhr.onreadystatechange = function () {
