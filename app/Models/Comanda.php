@@ -74,7 +74,7 @@ class Comanda extends Model
 
     public function numero_coperti()
     {
-        $coperto = ComandaDettaglio::where('prodotto_id', Prodotto::where('coperto', true)->first())->first();
+        $coperto = ComandaDettaglio::where('prodotto_id', Prodotto::where('coperto', true)->first()->id)->first();
         return $coperto ? $coperto->quantita : 0;
     }
 

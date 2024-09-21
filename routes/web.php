@@ -28,7 +28,8 @@ Route::get('/qr', function () {
 	return view('qr');
 })->name('qr');
 
-Route::get('qr/{cp:uuid}', function (ComandaPostazione $cp) {
+Route::get('qr/{uuid}', function ($uuid) {
+	$cp = ComandaPostazione::where('uuid',$uuid)->withoutGlobalScopes()->first();
 	if ($cp->delivered)
 		return "La comanda risulta già consegnata alle " . Date("H:i:s", strtotime($cp->delivered_at));
 	else {

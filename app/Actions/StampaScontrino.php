@@ -151,10 +151,12 @@ class StampaScontrino
 
             if ($postazioni_scontrino != "[]") {
                 foreach ($postazioni_scontrino as $p) {
+                    $cp = ComandaPostazione::where('postazione_id',$p->id)->where('comanda_id',$comanda->id)->first();
                     $printer->feed();
                     $printer->feed();
-                    $printer->text(str_pad('', 48, "-"));
-                    $this->printPostazione($comanda, $p, $printer);
+                    $printer->cut();
+                    //$printer->text(str_pad('', 48, "-"));
+                    $this->printPostazione($comanda, $p, $printer, $cp);
                 }
             }
 

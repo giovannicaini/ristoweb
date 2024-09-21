@@ -49,12 +49,12 @@ class ListEventos extends ListRecords
                         $new_postazione = $old_postazione->replicate();
                         $new_postazione->evento_id = $new_evento->id;
                         $new_postazione->save();
-                        foreach ($old_postazione->categorie as $old_categoria) {
+                        foreach ($old_postazione->categorieNS as $old_categoria) {
                             $new_categoria = $old_categoria->replicate();
                             $new_categoria->evento_id = $new_evento->id;
                             $new_categoria->postazione_id = $new_postazione->id;
                             $new_categoria->save();
-                            foreach ($old_categoria->prodotti as $old_prodotto) {
+                            foreach ($old_categoria->prodottiNS as $old_prodotto) {
                                 $new_prodotto = $old_prodotto->replicate();
                                 $new_prodotto->evento_id = $new_evento->id;
                                 $new_prodotto->categoria_id = $new_categoria->id;

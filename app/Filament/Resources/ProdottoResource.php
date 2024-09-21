@@ -40,11 +40,12 @@ class ProdottoResource extends Resource
                     ->numeric()
                     ->prefix('€'),
                 Forms\Components\Select::make('categoria_id')
-                    ->relationship('categoria', 'id')
+                    ->relationship('categoria', 'nome')
                     ->required(),
                 Forms\Components\TextInput::make('ordine')
                     ->required()
                     ->numeric(),
+                Forms\Components\Toggle::make('coperto'),
                 Forms\Components\Toggle::make('attivo')
                     ->required(),
             ]);

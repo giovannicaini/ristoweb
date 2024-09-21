@@ -34,4 +34,10 @@ class Categoria extends Model
     {
         return $this->hasMany(Prodotto::class);
     }
+
+    public function prodottiNS(): HasMany
+    {
+	    return $this->hasMany(Prodotto::class)->withoutGlobalScopes();
+    }
+
 }

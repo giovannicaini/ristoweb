@@ -100,8 +100,8 @@ class ComandePagamentiRelationManager extends RelationManager
                                 ->dehydrated(false)
                                 ->numeric()
                                 ->hidden(fn(Get $get) => $get("tipologia_pagamento_id") != TipologiaPagamento::where('nome', 'Contanti')->first()->id)
-                                ->live()
                                 ->prefix('€')
+                                ->live()
                                 ->afterStateUpdated(fn(Get $get, Set $set) => $set('resto', number_format(floatval($get('contanti')) - floatval($get('importo')), 2)))
                                 ->columnSpan(1),
                             Forms\Components\TextInput::make('resto')

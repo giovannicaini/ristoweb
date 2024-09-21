@@ -32,8 +32,7 @@ class CategoriaResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Forms\Components\Select::make('postazione_id')
-                    ->relationship('postazione', 'id')
-                    ->required(),
+                    ->relationship('postazione', 'nome'),
                 Forms\Components\Select::make('evento_id')
                     ->relationship('evento', 'id')
                     ->required(),
