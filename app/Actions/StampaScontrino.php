@@ -7,6 +7,7 @@ use App\Models\Cassa;
 use App\Models\Comanda;
 use App\Models\ComandaDettaglio;
 use App\Models\Postazione;
+use App\Models\Stampante;
 use App\Models\User;
 use Illuminate\Support\ItemNotFoundException;
 use Lorisleiva\Actions\Concerns\AsAction;
@@ -35,17 +36,17 @@ class StampaScontrino
             throw new \Exception("Manca l'id postazione su cui stampare");
         if ($tipo == "messaggio" && !$messaggio)
             throw new \Exception("Manca il messaggio da stampare");
-        $postazioni_id = array();
-
-        $postazioni_scontrino = $comanda->postazioni->where('accoda_a_scontrino', true)->sortBy('ordine');
-        //$postazioni_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', true)->orderBy('ordine')->get();
+        //$postazioni_id = array();
+        $postazioni_id = $comanda->comande_postazioni->pluck('postazione_id')->toArray();
+        //$postazioni_scontrino = $comanda->postazioni->where('accoda_a_scontrino', true)->sortBy('ordine');
+        $postazioni_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', true)->orderBy('ordine')->get();
         foreach ($postazioni_scontrino as $p) {
             ////$dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', Categoria::where('postazione_id', $p->id)->get()->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', $p->categorie->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $p->setAttribute('dettagli', $dettaglip);
         }
-        $postazioni_no_scontrino = $comanda->postazioni->where('accoda_a_scontrino', "!=", true)->sortBy('ordine');
-        //$postazioni_no_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', "!=", true)->orderBy('ordine')->get();
+        //$postazioni_no_scontrino = $comanda->postazioni->where('accoda_a_scontrino', "!=", true)->sortBy('ordine');
+        $postazioni_no_scontrino = Postazione::whereIn('id', $postazioni_id)->where('accoda_a_scontrino', "!=", true)->orderBy('ordine')->get();
         foreach ($postazioni_no_scontrino as $p) {
             $dettaglip = ComandaDettaglio::where('comanda_id', $comanda->id)->whereIn('prodotto_id', Prodotto::whereIn('categoria_id', $p->categorie->pluck('id')->toArray())->get()->pluck('id')->toArray())->get();
             $p->setAttribute('dettagli', $dettaglip);
@@ -69,6 +70,7 @@ class StampaScontrino
         if (!$comanda->cassa)
             throw new ItemNotFoundException();
         $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : $comanda->cassa->stampante;
+        $stampante_coperti = Stampante::where('descrizione','STAMPANTE 4')->first();
         try {
             $connector = new NetworkPrintConnector($stampante->ip, 9100, 2);
             $printer = new Printer($connector);
@@ -172,6 +174,51 @@ class StampaScontrino
         } finally {
             if (isset($printer))
                 $printer->close();
+                if ($comanda->numero_coperti() > 0){
+                    try {
+                        $connector = new NetworkPrintConnector($stampante_coperti->ip, 9100, 2);
+                        $printer = new Printer($connector);
+                        //$printer->setFont(Printer::FONT_B);
+                        $printer->setJustification(Printer::JUSTIFY_CENTER);
+                        $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+                        $printer->text(strtoupper("COPERTI"));
+                        $printer->feed();
+                        $printer->text("Comanda N. " . $comanda->n_ordine);
+                        $printer->selectPrintMode();
+                        $printer->feed();
+                        if ($comanda->tavolo) {
+                            $printer->text('Tavolo ' . $comanda->tavolo);
+                            $printer->feed();
+                        }
+                        if ($comanda->asporto) {
+                            $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+                            $printer->text('ASPORTO');
+                            $printer->selectPrintMode();
+                            $printer->feed();
+                        }
+                        $printer->text('[' . $comanda->nominativo . ']');
+                        $printer->feed(2);
+                        $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+                        $printer->setJustification(Printer::JUSTIFY_LEFT);
+                        $coperti = $comanda->numero_coperti();
+                        $printer->text($coperti . ' COPERTI ');
+                        $printer->feed();
+                        $printer->feed();
+                        $printer->feed();
+                        $printer->cut();
+                        $printer->pulse();
+                    } catch (\Exception $e) {
+                        Notification::make()
+                            ->title('Stampa Scontrino COPERTI non avvenuta')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->persistent()
+                            ->send();
+                    } finally {
+                        if (isset($printer))
+                            $printer->close();
+                    }
+                }
         }
     }
 
@@ -184,6 +231,7 @@ class StampaScontrino
         //$stampante = Stampante::find($cassa->stampante_id);
 
         foreach ($postazioni_no_scontrino as $p) {
+            
             $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : ($p->stampante ?? $comanda->cassa->stampante);
             $comanda_postazione = $comanda->comande_postazioni->where('postazione_id', $p->id)->first();
             try {
@@ -206,8 +254,6 @@ class StampaScontrino
             } finally {
                 if (isset($printer))
                     $printer->close();
-                $comanda_postazione->printed_at = now();
-                $comanda_postazione->save();
             }
         }
     }
@@ -255,11 +301,11 @@ class StampaScontrino
         $printer->selectPrintMode();
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $printer->text(date('d/m/Y H:i:s'));
-        $printer->feed();
-        $printer->text("SCANSIONARE IL QR CODE PRIMA DI CONSEGNARE!");
-        $printer->feed();
-        $printer->qrCode($comanda_postazione->uuid, Printer::QR_ECLEVEL_H, 5);
-        $printer->feed();
+        //$printer->feed();
+        //$printer->text("SCANSIONARE IL QR CODE PRIMA DI CONSEGNARE!");
+        //$printer->feed();
+        //$printer->qrCode($comanda_postazione->uuid, Printer::QR_ECLEVEL_H, 5);
+        //$printer->feed();
         $printer->feed();
     }
 }

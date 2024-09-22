@@ -17,6 +17,8 @@ use Filament\Actions\Modal\Actions\Action;
 use Filament\Forms\Components\Actions\Action as ActionsAction;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\TextInput;
+
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
@@ -342,6 +344,9 @@ class Comanda extends EditRecord
                     TextInput::make('nominativo')
                         ->required()
                         ->maxLength(255),
+                    TextInput::make('tavolo')
+                        ->maxLength(255),
+                    Toggle::make('asporto'),
                 ])
                 ->keyBindings(["f3"])
                 ->action(function (array $data): void {

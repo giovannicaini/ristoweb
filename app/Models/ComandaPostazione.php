@@ -28,11 +28,11 @@ class ComandaPostazione extends Model
     {
         return $this->belongsTo(Comanda::class);
     }
-    public function comandaNS(): BelongsTo
+    /*public function comandaNS(): BelongsTo
     {
         return $this->belongsTo(Comanda::class)->withoutGlobalScopes();
     }
-
+*/
     public function postazione(): BelongsTo
     {
         return $this->belongsTo(Postazione::class);

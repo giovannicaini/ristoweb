@@ -25,13 +25,13 @@ class Postazione extends Model
     {
         return $this->hasMany(Categoria::class);
     }
-
+/*
     public function categorieNS(): HasMany
     {
 	    return $this->hasMany(Categoria::class)->withoutGlobalScopes();
     }
 
-
+*/
     public function evento(): BelongsTo
     {
         return $this->belongsTo(Evento::class);
