@@ -147,6 +147,8 @@ class Comanda extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         $dettagli = [];
+        $data2 = [];
+        
         foreach ($data as $campo => $valore) {
             $arr = explode('_', $campo);
             if ($valore && $arr[0] == "prodotto") {
@@ -159,9 +161,11 @@ class Comanda extends EditRecord
                 $dettagli[] = $dettaglio;
             }
         }
-        $data = [];
-        $data['comande_dettagli'] = $dettagli;
-        return $data;
+        $data2['comande_dettagli'] = $dettagli;
+        $data2['nominativo'] = $data['nominativo'];
+        $data2['tavolo'] = $data['tavolo'];
+        $data2['asporto'] = $data['asporto'];
+        return $data2;
     }
 
     protected function mutateFormTotaliDataBeforeSave(array $data): array
@@ -192,6 +196,10 @@ class Comanda extends EditRecord
         $delete = array_diff($old_prodotti_id, $new_prodotti_id);
         ComandaDettaglio::where('comanda_id', $record->id)->whereIn('prodotto_id', $delete)->delete();
         //$record->update($data);
+        $record->nominativo = $data['nominativo'];
+        $record->tavolo = $data['tavolo'];
+        $record->asporto = $data['asporto'];
+        $record->save();
         $this->activeRelationManager = 0;
         $this->dispatch('refreshRelation');
         ComandaLogger::make($record)->created();
@@ -352,6 +360,8 @@ class Comanda extends EditRecord
                 ->action(function (array $data): void {
                     $comanda = new \App\Models\Comanda();
                     $comanda->nominativo = $data["nominativo"];
+                    $comanda->tavolo = $data["tavolo"];
+                    $comanda->asporto = $data["asporto"];
                     $comanda->save();
                     redirect()->route('filament.cassa.resources.comandas.comanda', ['record' => $comanda]);
                 })

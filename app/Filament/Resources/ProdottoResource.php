@@ -5,10 +5,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\ProdottoResource\Pages;
 use App\Filament\Resources\ProdottoResource\RelationManagers;
 use App\Models\Prodotto;
+use Filament\Actions\ReplicateAction;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ReplicateAction as ActionsReplicateAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -93,6 +95,8 @@ class ProdottoResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                ActionsReplicateAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

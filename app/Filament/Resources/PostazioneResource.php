@@ -42,7 +42,6 @@ class PostazioneResource extends Resource
                     ->numeric(),
                 Forms\Components\Select::make('stampante_id')
                     ->relationship('stampante', 'id')
-                    ->required(),
             ]);
     }
 

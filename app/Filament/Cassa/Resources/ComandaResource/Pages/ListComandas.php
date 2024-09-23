@@ -8,6 +8,8 @@ use App\Models\Evento;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
+
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
 
@@ -19,20 +21,25 @@ class ListComandas extends ListRecords
     {
         return [
             \Filament\Actions\CreateAction::make()
-                ->label("Crea Nuova Comanda [F3]")
-                ->model(Comanda::class)
-                ->form([
-                    TextInput::make('nominativo')
-                        ->required()
-                        ->maxLength(255),
-                ])
-                ->keyBindings(["f3"])
-                ->action(function (array $data): void {
-                    $comanda = new \App\Models\Comanda();
-                    $comanda->nominativo = $data["nominativo"];
-                    $comanda->save();
-                    redirect()->route('filament.cassa.resources.comandas.comanda', ['record' => $comanda]);
-                })
+            ->label("Crea Nuova Comanda [F3]")
+            ->model(Comanda::class)
+            ->form([
+                TextInput::make('nominativo')
+                    ->required()
+                    ->maxLength(255),
+                TextInput::make('tavolo')
+                    ->maxLength(255),
+                Toggle::make('asporto'),
+            ])
+            ->keyBindings(["f3"])
+            ->action(function (array $data): void {
+                $comanda = new \App\Models\Comanda();
+                $comanda->nominativo = $data["nominativo"];
+                $comanda->nominativo = $data["tavolo"];
+                $comanda->nominativo = $data["asporto"];
+                $comanda->save();
+                redirect()->route('filament.cassa.resources.comandas.comanda', ['record' => $comanda]);
+            })
         ];
     }
 

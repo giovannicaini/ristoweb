@@ -30,8 +30,8 @@ class Postazione extends Model
     {
 	    return $this->hasMany(Categoria::class)->withoutGlobalScopes();
     }
-
 */
+
     public function evento(): BelongsTo
     {
         return $this->belongsTo(Evento::class);

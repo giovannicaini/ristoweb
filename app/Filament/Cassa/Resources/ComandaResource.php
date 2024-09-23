@@ -250,10 +250,10 @@ class ComandaResource extends Resource
             ->columns(4)
             ->extraAttributes(["class" => "background-primary", "style" => "--c-600:var(--primary-600);"]);
 
-        $categorie = Categoria::get();
+        $categorie = Categoria::orderBy('ordine')->get();
         foreach ($categorie as $categoria) {
             $campi = [];
-            foreach ($categoria->prodotti as $prodotto) {
+            foreach ($categoria->prodotti->sortBy('ordine') as $prodotto) {
                 $campi[] = Group::make([
                     Placeholder::make('placeholder_nome_' . $prodotto->id)
                         ->content(function (Get $get) use ($prodotto) {
