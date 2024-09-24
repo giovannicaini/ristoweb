@@ -42,6 +42,7 @@ class ImportaDatabase extends Widget implements HasForms, HasActions
     public function provaAction(): Action
     {
         return Action::make('prova')
+            ->label("Importa JSON Database")
             ->form([
                 FileUpload::make('json')
                     ->label("Importa JSON Database")

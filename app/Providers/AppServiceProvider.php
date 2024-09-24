@@ -30,19 +30,18 @@ class AppServiceProvider extends ServiceProvider
         });*/
         PanelSwitch::configureUsing(function (PanelSwitch $panelSwitch) {
             $panelSwitch
-            ->modalHeading('App Disponibili')
-            ->modalWidth('sm')
-            ->slideOver()
-            ->icons([
-                'admin' => 'heroicon-o-square-2-stack',
-                'cassa' => 'heroicon-o-star',
-            ])
-            ->iconSize(16)
-            ->labels([
-                'admin' => 'Admin',
-                'cassa' => 'Cassa'
-            ]);
+                ->modalHeading('Pannelli Disponibili')
+                ->modalWidth('sm')
+                ->slideOver()
+                ->icons([
+                    'admin' => 'heroicon-o-user-plus',
+                    'cassa' => 'heroicon-o-banknotes',
+                ])
+                ->iconSize(16)
+                ->labels([
+                    'admin' => 'Admin',
+                    'cassa' => 'Cassa'
+                ]);
         });
-        
     }
 }

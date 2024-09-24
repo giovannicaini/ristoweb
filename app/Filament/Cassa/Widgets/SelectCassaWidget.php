@@ -29,7 +29,7 @@ class SelectCassaWidget extends Widget implements HasActions, HasForms
             ->form([
                 Select::make('evento_id')
                     ->label("EVENTO")
-                    ->options(Evento::orderBy('id', 'DESC')->pluck('nome', 'id'))
+                    ->options(Evento::orderBy('id', 'DESC')->get()->pluck('descrizione', 'id'))
                     ->columnSpan(1)
                     ->required()
                     ->live(),

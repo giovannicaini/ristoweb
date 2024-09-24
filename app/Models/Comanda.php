@@ -74,7 +74,7 @@ class Comanda extends Model
 
     public function numero_coperti()
     {
-        $coperto = ComandaDettaglio::where('comanda_id',$this->id)->where('prodotto_id', Prodotto::where('coperto', true)->first()->id)->first();
+        $coperto = ComandaDettaglio::where('comanda_id', $this->id)->where('prodotto_id', Prodotto::where('coperto', true)->first()->id)->first();
         return $coperto ? $coperto->quantita : 0;
     }
 
@@ -103,7 +103,7 @@ class Comanda extends Model
 
     public function getTotaleFinaleAttribute()
     {
-        return $this->totale_prodotti_con_sconto - $this->su_conto;
+        return $this->totale_prodotti_con_sconto - $this->su_conto - $this->buoni - $this->sconto;
     }
 
     public function getTotalePagatoAttribute()

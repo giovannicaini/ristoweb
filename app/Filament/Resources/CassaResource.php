@@ -17,7 +17,7 @@ class CassaResource extends Resource
 {
     protected static ?string $model = Cassa::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-calculator';
 
     public static function getPluralLabel(): ?string
     {

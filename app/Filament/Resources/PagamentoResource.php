@@ -17,7 +17,13 @@ class PagamentoResource extends Resource
 {
     protected static ?string $model = Pagamento::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+
+
+    public static function getPluralLabel(): ?string
+    {
+        return "Pagamenti";
+    }
 
     public static function form(Form $form): Form
     {

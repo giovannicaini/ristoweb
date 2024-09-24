@@ -17,7 +17,7 @@ class ComandaDettaglioResource extends Resource
 {
     protected static ?string $model = ComandaDettaglio::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-queue-list';
 
     public static function getPluralLabel(): ?string
     {

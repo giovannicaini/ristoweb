@@ -101,12 +101,16 @@ class Comanda extends EditRecord
     {
         /** @internal Read the DocBlock above the following method. */
         $qta_prodotti = [];
-        foreach (Prodotto::get() as $prodotto) {
-            $test = ComandaDettaglio::where('comanda_id', $this->getRecord()->id)->where('prodotto_id', $prodotto->id)->first();
-            if ($test) {
-                $qta_prodotti['prodotto_' . $prodotto->id] = $test->quantita;
-                if ($test->note)
-                    $qta_prodotti['note_' . $prodotto->id] = $test->note;
+        foreach (Prodotto::with('comande_dettagli')->get() as $prodotto) {
+
+            $filtered = $prodotto->comande_dettagli->filter(function ($comanda_dettaglio) {
+                return $comanda_dettaglio->comanda_id == $this->getRecord()->id;
+            });
+            //$test = ComandaDettaglio::where('comanda_id', $this->getRecord()->id)->where('prodotto_id', $prodotto->id)->first();
+            if ($filtered->first()) {
+                $qta_prodotti['prodotto_' . $prodotto->id] = $filtered->first()->quantita;
+                if ($filtered->first()->note)
+                    $qta_prodotti['note_' . $prodotto->id] = $filtered->first()->note;
             }
         }
         $this->fillFormWithDataAndCallHooks($this->getRecord(), $qta_prodotti);
@@ -148,7 +152,7 @@ class Comanda extends EditRecord
     {
         $dettagli = [];
         $data2 = [];
-        
+
         foreach ($data as $campo => $valore) {
             $arr = explode('_', $campo);
             if ($valore && $arr[0] == "prodotto") {

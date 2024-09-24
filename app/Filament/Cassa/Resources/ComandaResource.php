@@ -35,11 +35,11 @@ class ComandaResource extends Resource
 {
     protected static ?string $model = Comanda::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function getPluralLabel(): ?string
     {
-        return "Cassa";
+        return "Comande";
     }
 
     public static function action2()
@@ -144,7 +144,7 @@ class ComandaResource extends Resource
                             if ($state)
                                 $component->state(number_format($state, 2));
                         })
-                        ->live()
+                        ->live(debounce: 500)
                         ->afterStateUpdated(function (TextInput $component, Set $set, Get $get) {
                             $set('subtotale', number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')) - floatval($get('buoni')), 2));
                             $set('subtotale2', number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
@@ -162,7 +162,7 @@ class ComandaResource extends Resource
                             if ($state)
                                 $component->state(number_format($state, 2));
                         })
-                        ->live()
+                        ->live(debounce: 500)
                         ->afterStateUpdated(function (TextInput $component, ?string $state, Set $set, Get $get) {
                             $set('subtotale', number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')) - floatval($get('buoni')), 2));
                             $set('subtotale2', number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
@@ -175,7 +175,7 @@ class ComandaResource extends Resource
                         ->numeric()
                         ->default(0.00)
                         ->disabled()
-                        ->live()
+                        ->live(debounce: 500)
                         ->extraInputAttributes(["class" => "text-right"])
                         ->afterStateHydrated(function (TextInput $component, Get $get) {
                             $component->state(number_format(floatval($get('totale_prodotti_con_sconto')) - floatval($get('sconto')) - floatval($get('buoni')), 2));
@@ -185,7 +185,12 @@ class ComandaResource extends Resource
                     Forms\Components\Select::make('conto_id')
                         ->label("Conto (volontari che pagano dopo)")
                         ->relationship('conto', 'nome')
+                        ->native(false)
                         ->createOptionForm([
+                            Forms\Components\TextInput::make('nome')
+                                ->required()
+                        ])
+                        ->editOptionForm([
                             Forms\Components\TextInput::make('nome')
                                 ->required()
                         ])
@@ -202,7 +207,7 @@ class ComandaResource extends Resource
                             if ($state)
                                 $component->state(number_format($state, 2));
                         })
-                        ->live()
+                        ->live(debounce: 500)
                         ->afterStateUpdated(function (TextInput $component, ?string $state, Set $set, Get $get) {
                             $set('subtotale2', number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
                             // if ($get('buoni'))
@@ -215,7 +220,7 @@ class ComandaResource extends Resource
                         ->numeric()
                         ->default(0.00)
                         ->disabled()
-                        ->live()
+                        ->live(debounce: 500)
                         ->extraInputAttributes(["class" => "text-right"])
                         ->hidden(fn(Get $get) => $get("conto_id") == null)
                         ->afterStateHydrated(function (TextInput $component, Get $get) {
@@ -250,7 +255,7 @@ class ComandaResource extends Resource
             ->columns(4)
             ->extraAttributes(["class" => "background-primary", "style" => "--c-600:var(--primary-600);"]);
 
-        $categorie = Categoria::orderBy('ordine')->get();
+        $categorie = Categoria::with('prodotti')->orderBy('ordine')->get();
         foreach ($categorie as $categoria) {
             $campi = [];
             foreach ($categoria->prodotti->sortBy('ordine') as $prodotto) {

@@ -17,7 +17,7 @@ class PostazioneResource extends Resource
 {
     protected static ?string $model = Postazione::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-flag';
 
 
     public static function getPluralLabel(): ?string

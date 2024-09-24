@@ -19,7 +19,7 @@ class ProdottoResource extends Resource
 {
     protected static ?string $model = Prodotto::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
 
     public static function getPluralLabel(): ?string

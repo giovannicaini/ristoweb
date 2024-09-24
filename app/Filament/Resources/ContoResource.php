@@ -17,7 +17,7 @@ class ContoResource extends Resource
 {
     protected static ?string $model = Conto::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-identification';
 
     public static function getPluralLabel(): ?string
     {

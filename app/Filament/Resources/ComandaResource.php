@@ -36,7 +36,7 @@ class ComandaResource extends Resource
 {
     protected static ?string $model = Comanda::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
     public static function getPluralLabel(): ?string
     {
@@ -221,8 +221,6 @@ class ComandaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nome')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('evento.id')
                     ->numeric()
                     ->sortable(),

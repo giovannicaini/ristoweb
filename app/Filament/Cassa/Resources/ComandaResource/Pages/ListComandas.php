@@ -21,25 +21,25 @@ class ListComandas extends ListRecords
     {
         return [
             \Filament\Actions\CreateAction::make()
-            ->label("Crea Nuova Comanda [F3]")
-            ->model(Comanda::class)
-            ->form([
-                TextInput::make('nominativo')
-                    ->required()
-                    ->maxLength(255),
-                TextInput::make('tavolo')
-                    ->maxLength(255),
-                Toggle::make('asporto'),
-            ])
-            ->keyBindings(["f3"])
-            ->action(function (array $data): void {
-                $comanda = new \App\Models\Comanda();
-                $comanda->nominativo = $data["nominativo"];
-                $comanda->nominativo = $data["tavolo"];
-                $comanda->nominativo = $data["asporto"];
-                $comanda->save();
-                redirect()->route('filament.cassa.resources.comandas.comanda', ['record' => $comanda]);
-            })
+                ->label("Crea Nuova Comanda [F3]")
+                ->model(Comanda::class)
+                ->form([
+                    TextInput::make('nominativo')
+                        ->required()
+                        ->maxLength(255),
+                    TextInput::make('tavolo')
+                        ->maxLength(255),
+                    Toggle::make('asporto'),
+                ])
+                ->keyBindings(["f3"])
+                ->action(function (array $data): void {
+                    $comanda = new \App\Models\Comanda();
+                    $comanda->nominativo = $data["nominativo"];
+                    $comanda->nominativo = $data["tavolo"];
+                    $comanda->nominativo = $data["asporto"];
+                    $comanda->save();
+                    redirect()->route('filament.cassa.resources.comandas.comanda', ['record' => $comanda]);
+                })
         ];
     }
 
@@ -52,7 +52,7 @@ class ListComandas extends ListRecords
             ->form([
                 Select::make('evento_id')
                     ->label("EVENTO")
-                    ->options(Evento::orderBy('id', 'DESC')->pluck('nome', 'id'))
+                    ->options(Evento::orderBy('id', 'DESC')->get()->pluck('descrizione', 'id'))
                     ->columnSpan(1)
                     ->required()
                     ->live(),

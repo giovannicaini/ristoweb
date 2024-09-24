@@ -13,6 +13,8 @@ class Evento extends Model
 
     protected $table = 'eventi';
 
+    protected $appends = ['descrizione'];
+
     public function categorie(): HasMany
     {
         return $this->hasMany(Categoria::class);
@@ -46,6 +48,11 @@ class Evento extends Model
     public function tipologie_pagamenti(): HasMany
     {
         return $this->hasMany(TipologiaPagamento::class);
+    }
+
+    public function getDescrizioneAttribute()
+    {
+        return $this->nome . ' | ' . date('l d M Y', strtotime($this->data));
     }
 
     public static function Corrente()

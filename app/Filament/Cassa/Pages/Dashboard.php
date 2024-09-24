@@ -18,7 +18,7 @@ class Dashboard extends \Filament\Pages\Dashboard
             ->form([
                 Select::make('evento_id')
                     ->label("EVENTO")
-                    ->options(Evento::orderBy('id', 'DESC')->pluck('nome', 'id'))
+                    ->options(Evento::orderBy('id', 'DESC')->get()->pluck('descrizione', 'id'))
                     ->default(Evento::Corrente())
                     ->columnSpan(1)
                     ->required()

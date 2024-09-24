@@ -18,7 +18,13 @@ class TipologiaPagamentoResource extends Resource
 {
     protected static ?string $model = TipologiaPagamento::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-credit-card';
+
+
+    public static function getPluralLabel(): ?string
+    {
+        return "Tipologia Pagamenti";
+    }
 
     public static function form(Form $form): Form
     {

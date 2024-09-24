@@ -17,7 +17,7 @@ class StampanteResource extends Resource
 {
     protected static ?string $model = Stampante::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-printer';
 
     public static function getPluralLabel(): ?string
     {

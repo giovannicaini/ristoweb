@@ -10,7 +10,7 @@ use Filament\Widgets\StatsOverviewWidget;
 
 class Impostazioni extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationIcon = 'heroicon-o-cog-8-tooth';
 
     protected static string $view = 'filament.pages.impostazioni';
 
@@ -34,7 +34,6 @@ class Impostazioni extends Page
     protected function getHeaderWidgets(): array
     {
         return [
-            AccountWidget::class,
             ImportaDatabase::class
         ];
     }

@@ -23,6 +23,7 @@ use Filament\Notifications\Notification;
 class StampaScontrino
 {
     use AsAction;
+    private const secondi_attesa_stampante = 2;
 
     public function handle(Comanda $comanda, $tipo, $postazione_id = null, $messaggio = null)
     {
@@ -70,9 +71,9 @@ class StampaScontrino
         if (!$comanda->cassa)
             throw new ItemNotFoundException();
         $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : $comanda->cassa->stampante;
-        $stampante_coperti = Stampante::where('descrizione','STAMPANTE 4')->first();
+        $stampante_coperti = Stampante::where('descrizione', 'STAMPANTE 4')->first();
         try {
-            $connector = new NetworkPrintConnector($stampante->ip, 9100, 2);
+            $connector = new NetworkPrintConnector($stampante->ip, 9100, $this::secondi_attesa_stampante);
             $printer = new Printer($connector);
             //$printer->setFont(Printer::FONT_B);
             $items = array();
@@ -153,7 +154,7 @@ class StampaScontrino
 
             if ($postazioni_scontrino != "[]") {
                 foreach ($postazioni_scontrino as $p) {
-                    $cp = ComandaPostazione::where('postazione_id',$p->id)->where('comanda_id',$comanda->id)->first();
+                    $cp = ComandaPostazione::where('postazione_id', $p->id)->where('comanda_id', $comanda->id)->first();
                     $printer->feed();
                     $printer->feed();
                     $printer->cut();
@@ -174,51 +175,51 @@ class StampaScontrino
         } finally {
             if (isset($printer))
                 $printer->close();
-                if ($comanda->numero_coperti() > 0){
-                    try {
-                        $connector = new NetworkPrintConnector($stampante_coperti->ip, 9100, 2);
-                        $printer = new Printer($connector);
-                        //$printer->setFont(Printer::FONT_B);
-                        $printer->setJustification(Printer::JUSTIFY_CENTER);
-                        $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-                        $printer->text(strtoupper("COPERTI"));
+            if ($comanda->numero_coperti() > 0) {
+                try {
+                    $connector = new NetworkPrintConnector($stampante_coperti->ip, 9100, $this::secondi_attesa_stampante);
+                    $printer = new Printer($connector);
+                    //$printer->setFont(Printer::FONT_B);
+                    $printer->setJustification(Printer::JUSTIFY_CENTER);
+                    $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+                    $printer->text(strtoupper("COPERTI"));
+                    $printer->feed();
+                    $printer->text("Comanda N. " . $comanda->n_ordine);
+                    $printer->selectPrintMode();
+                    $printer->feed();
+                    if ($comanda->tavolo) {
+                        $printer->text('Tavolo ' . $comanda->tavolo);
                         $printer->feed();
-                        $printer->text("Comanda N. " . $comanda->n_ordine);
+                    }
+                    if ($comanda->asporto) {
+                        $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+                        $printer->text('ASPORTO');
                         $printer->selectPrintMode();
                         $printer->feed();
-                        if ($comanda->tavolo) {
-                            $printer->text('Tavolo ' . $comanda->tavolo);
-                            $printer->feed();
-                        }
-                        if ($comanda->asporto) {
-                            $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-                            $printer->text('ASPORTO');
-                            $printer->selectPrintMode();
-                            $printer->feed();
-                        }
-                        $printer->text('[' . $comanda->nominativo . ']');
-                        $printer->feed(2);
-                        $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
-                        $printer->setJustification(Printer::JUSTIFY_LEFT);
-                        $coperti = $comanda->numero_coperti();
-                        $printer->text($coperti . ' COPERTI ');
-                        $printer->feed();
-                        $printer->feed();
-                        $printer->feed();
-                        $printer->cut();
-                        $printer->pulse();
-                    } catch (\Exception $e) {
-                        Notification::make()
-                            ->title('Stampa Scontrino COPERTI non avvenuta')
-                            ->body($e->getMessage())
-                            ->danger()
-                            ->persistent()
-                            ->send();
-                    } finally {
-                        if (isset($printer))
-                            $printer->close();
                     }
+                    $printer->text('[' . $comanda->nominativo . ']');
+                    $printer->feed(2);
+                    $printer->selectPrintMode(Printer::MODE_DOUBLE_WIDTH);
+                    $printer->setJustification(Printer::JUSTIFY_LEFT);
+                    $coperti = $comanda->numero_coperti();
+                    $printer->text($coperti . ' COPERTI ');
+                    $printer->feed();
+                    $printer->feed();
+                    $printer->feed();
+                    $printer->cut();
+                    $printer->pulse();
+                } catch (\Exception $e) {
+                    Notification::make()
+                        ->title('Stampa Scontrino COPERTI non avvenuta')
+                        ->body($e->getMessage())
+                        ->danger()
+                        ->persistent()
+                        ->send();
+                } finally {
+                    if (isset($printer))
+                        $printer->close();
                 }
+            }
         }
     }
 
@@ -231,14 +232,14 @@ class StampaScontrino
         //$stampante = Stampante::find($cassa->stampante_id);
 
         foreach ($postazioni_no_scontrino as $p) {
-            
+
             $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : ($p->stampante ?? $comanda->cassa->stampante);
             $comanda_postazione = $comanda->comande_postazioni->where('postazione_id', $p->id)->first();
             try {
                 if ($comanda_postazione->printed) {
                     throw new \Exception("La comanda per la postazione $p->nome è già stata stampata. Per procedere ad una nuova stampa e annullare la precedente, andare in 'Stato Stampe Singole Postazioni'");
                 }
-                $connector = new NetworkPrintConnector($stampante->ip, 9100, 2);
+                $connector = new NetworkPrintConnector($stampante->ip, 9100, $this::secondi_attesa_stampante);
                 $printer = new Printer($connector);
                 $this->printPostazione($comanda, $p, $printer, $comanda_postazione);
                 $printer->cut();
