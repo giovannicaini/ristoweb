@@ -4,6 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Filament\Cassa\Widgets\SelectCassaWidget;
 use App\Filament\Resources\EventoResource\Widgets\EventoAttivoWidget;
+use App\Filament\Resources\ProdottoResource\Widgets\ProdottoChart;
+use App\Filament\Resources\TipologiaPagamentoResource\Widgets\PagamentiChart;
 use App\Filament\Widgets\ImportaDatabase;
 use App\Models\Cassa;
 use App\Models\Evento;
@@ -57,7 +59,9 @@ class Dashboard extends Page
         return [
             AccountWidget::class,
             SelectCassaWidget::class,
-            LatestUsersWidget::class
+            LatestUsersWidget::class,
+            PagamentiChart::class,
+            ProdottoChart::class,
         ];
     }
 

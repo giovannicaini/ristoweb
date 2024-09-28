@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\EventoResource\Pages;
 
 use App\Filament\Resources\EventoResource;
+use App\Models\Categoria;
 use App\Models\Evento;
 use App\Models\Postazione;
 use App\Models\Scopes\EventoScope;
@@ -60,6 +61,19 @@ class ListEventos extends ListRecords
                                 $new_prodotto->categoria_id = $new_categoria->id;
                                 $new_prodotto->save();
                             }
+                        }
+                    }
+                    $old_categorie_no_postazione = Categoria::withoutGlobalScope(EventoScope::class)->where('evento_id', $old_evento->id)->where('postazione_id', null)->get();
+                    foreach ($old_categorie_no_postazione as $old_categoria) {
+                        $new_categoria = $old_categoria->replicate();
+                        $new_categoria->evento_id = $new_evento->id;
+                        $new_categoria->postazione_id = null;
+                        $new_categoria->save();
+                        foreach ($old_categoria->prodottiNS as $old_prodotto) {
+                            $new_prodotto = $old_prodotto->replicate();
+                            $new_prodotto->evento_id = $new_evento->id;
+                            $new_prodotto->categoria_id = $new_categoria->id;
+                            $new_prodotto->save();
                         }
                     }
                     Notification::make()

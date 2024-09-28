@@ -22,6 +22,8 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Vite as FacadesVite;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+use Phpsa\FilamentAuthentication\FilamentAuthentication;
 
 class CassaPanelProvider extends PanelProvider
 {
@@ -58,6 +60,11 @@ class CassaPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->plugins([
+                //FilamentSpatieRolesPermissionsPlugin::make(),
+                FilamentAuthentication::make(),
+                FilamentApexChartsPlugin::make()
             ])
             ->databaseTransactions()
             ->maxContentWidth(MaxWidth::Full)

@@ -21,6 +21,7 @@ use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 use Phpsa\FilamentAuthentication\FilamentAuthentication;
 use Phpsa\FilamentAuthentication\Widgets\LatestUsersWidget;
 
@@ -66,7 +67,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 //FilamentSpatieRolesPermissionsPlugin::make(),
-                FilamentAuthentication::make()
+                FilamentAuthentication::make(),
+                FilamentApexChartsPlugin::make()
             ])
             ->renderHook(
                 'panels::head.start',

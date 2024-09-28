@@ -208,6 +208,11 @@ class ComandaResource extends Resource
                                 $component->state(number_format($state, 2));
                         })
                         ->live(debounce: 500)
+                        ->afterStateHydrated(function (Set $set, Get $get) {
+                            $set('subtotale2', number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
+                            // if ($get('buoni'))
+                            //$component->state(number_format(floatval($get('buoni')), 2));
+                        })
                         ->afterStateUpdated(function (TextInput $component, ?string $state, Set $set, Get $get) {
                             $set('subtotale2', number_format(floatval($get('subtotale')) - floatval($get('su_conto')), 2));
                             // if ($get('buoni'))
@@ -372,10 +377,11 @@ class ComandaResource extends Resource
                 Tables\Columns\TextColumn::make('cassa_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('totale')
+                Tables\Columns\TextColumn::make('totale_pagato')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('pagato')
+                Tables\Columns\TextColumn::make('totale_da_pagare')
+                    ->label('Da Pagare')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('sconto')

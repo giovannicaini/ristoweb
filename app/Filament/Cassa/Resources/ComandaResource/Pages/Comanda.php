@@ -143,7 +143,6 @@ class Comanda extends EditRecord
             ...$record->attributesToArray(),
             ...$extraData,
         ]);
-
         $this->formTotali->fill($dataTotali);
 
         $this->callHook('afterFillTotali');
@@ -206,6 +205,7 @@ class Comanda extends EditRecord
         $record->save();
         $this->activeRelationManager = 0;
         $this->dispatch('refreshRelation');
+        $this->dispatch('refreshComanda');
         ComandaLogger::make($record)->created();
         return $record;
     }
