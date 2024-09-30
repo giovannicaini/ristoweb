@@ -71,7 +71,7 @@ class StampaScontrino
         if (!$comanda->cassa)
             throw new ItemNotFoundException();
         $stampante = $stampa_cassa_attiva ? Cassa::cassaCorrente()->stampante : $comanda->cassa->stampante;
-        $stampante_coperti = Stampante::where('descrizione', 'STAMPANTE 4')->first();
+        $stampante_coperti = Stampante::where('descrizione', 'STAMPANTE 3')->first();
         try {
             $connector = new NetworkPrintConnector($stampante->ip, 9100, $this::secondi_attesa_stampante);
             $printer = new Printer($connector);

@@ -35,8 +35,8 @@ class ListComandas extends ListRecords
                 ->action(function (array $data): void {
                     $comanda = new \App\Models\Comanda();
                     $comanda->nominativo = $data["nominativo"];
-                    $comanda->nominativo = $data["tavolo"];
-                    $comanda->nominativo = $data["asporto"];
+                    $comanda->tavolo = $data["tavolo"];
+                    $comanda->asporto = $data["asporto"];
                     $comanda->save();
                     redirect()->route('filament.cassa.resources.comandas.comanda', ['record' => $comanda]);
                 })
