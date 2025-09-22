@@ -62,7 +62,7 @@ class ProdottoResource extends Resource
                 Tables\Columns\TextColumn::make('nome_breve')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('prezzo')
-                    ->numeric()
+                    ->money('EUR')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('categoria.id')
                     ->numeric()

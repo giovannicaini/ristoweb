@@ -187,7 +187,6 @@ return [
 
     'aliases' => Facade::defaultAliases()->merge([
         // 'Example' => App\Facades\Example::class,
-        'Twig' => \DinhQuocHan\Twig\Facades\Twig::class,
     ])->toArray(),
 
 ];
