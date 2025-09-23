@@ -76,6 +76,6 @@ class CassaPanelProvider extends PanelProvider
                     ->withEntryPoints(['resources/css/app.css'])->toHtml()
             )
             ->unsavedChangesAlerts()
-            ->viteTheme('resources/css/filament/cassa/theme.css');;
+            ->viteTheme('resources/css/filament/cassa/theme.css');
     }
 }
