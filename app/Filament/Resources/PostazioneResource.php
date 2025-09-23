@@ -2,11 +2,26 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\PostazioneResource\RelationManagers\CategorieRelationManager;
+use App\Filament\Resources\PostazioneResource\Pages\ListPostaziones;
+use App\Filament\Resources\PostazioneResource\Pages\CreatePostazione;
+use App\Filament\Resources\PostazioneResource\Pages\EditPostazione;
 use App\Filament\Resources\PostazioneResource\Pages;
 use App\Filament\Resources\PostazioneResource\RelationManagers;
 use App\Models\Postazione;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,7 +32,7 @@ class PostazioneResource extends Resource
 {
     protected static ?string $model = Postazione::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-flag';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-flag';
 
 
     public static function getPluralLabel(): ?string
@@ -25,22 +40,22 @@ class PostazioneResource extends Resource
         return "Postazioni";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('nome')
+        return $schema
+            ->components([
+                TextInput::make('nome')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('evento_id')
+                Select::make('evento_id')
                     ->relationship('evento', 'id')
                     ->required(),
-                Forms\Components\Toggle::make('accoda_a_scontrino'),
-                Forms\Components\Toggle::make('stampa_coperti'),
-                Forms\Components\TextInput::make('ordine')
+                Toggle::make('accoda_a_scontrino'),
+                Toggle::make('stampa_coperti'),
+                TextInput::make('ordine')
                     ->required()
                     ->numeric(),
-                Forms\Components\Select::make('stampante_id')
+                Select::make('stampante_id')
                     ->relationship('stampante', 'id')
             ]);
     }
@@ -49,45 +64,45 @@ class PostazioneResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nome')
+                TextColumn::make('nome')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('evento.id')
+                TextColumn::make('evento.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('accoda_a_scontrino')
+                IconColumn::make('accoda_a_scontrino')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('stampa_coperti')
+                IconColumn::make('stampa_coperti')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('ordine')
+                TextColumn::make('ordine')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('stampante.id')
+                TextColumn::make('stampante.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -95,16 +110,16 @@ class PostazioneResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\CategorieRelationManager::class
+            CategorieRelationManager::class
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPostaziones::route('/'),
-            'create' => Pages\CreatePostazione::route('/create'),
-            'edit' => Pages\EditPostazione::route('/{record}/edit'),
+            'index' => ListPostaziones::route('/'),
+            'create' => CreatePostazione::route('/create'),
+            'edit' => EditPostazione::route('/{record}/edit'),
         ];
     }
 

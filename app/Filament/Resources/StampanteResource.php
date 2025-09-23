@@ -2,11 +2,19 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\StampanteResource\Pages\ListStampantes;
+use App\Filament\Resources\StampanteResource\Pages\CreateStampante;
+use App\Filament\Resources\StampanteResource\Pages\EditStampante;
 use App\Filament\Resources\StampanteResource\Pages;
 use App\Filament\Resources\StampanteResource\RelationManagers;
 use App\Models\Stampante;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,24 +25,24 @@ class StampanteResource extends Resource
 {
     protected static ?string $model = Stampante::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-printer';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-printer';
 
     public static function getPluralLabel(): ?string
     {
         return "Stampanti";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('ip')
+        return $schema
+            ->components([
+                TextInput::make('ip')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('descrizione')
+                TextInput::make('descrizione')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('codice_euro')
+                TextInput::make('codice_euro')
                     ->required()
                     ->numeric(),
             ]);
@@ -44,22 +52,22 @@ class StampanteResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('ip')
+                TextColumn::make('ip')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('descrizione')
+                TextColumn::make('descrizione')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('codice_euro')
+                TextColumn::make('codice_euro')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -67,12 +75,12 @@ class StampanteResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -87,9 +95,9 @@ class StampanteResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListStampantes::route('/'),
-            'create' => Pages\CreateStampante::route('/create'),
-            'edit' => Pages\EditStampante::route('/{record}/edit'),
+            'index' => ListStampantes::route('/'),
+            'create' => CreateStampante::route('/create'),
+            'edit' => EditStampante::route('/{record}/edit'),
         ];
     }
 }

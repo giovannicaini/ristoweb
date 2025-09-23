@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Panel;
 use App\Filament\Cassa\Widgets\SelectCassaWidget;
 use App\Filament\Resources\EventoResource\Widgets\EventoAttivoWidget;
 use App\Filament\Resources\ProdottoResource\Widgets\ProdottoChart;
@@ -30,7 +31,7 @@ class Dashboard extends Page
     /**
      * @var view-string
      */
-    protected static string $view = 'filament-panels::pages.dashboard';
+    //protected string $view = 'filament-panels::pages.dashboard';
 
     public static function getNavigationLabel(): string
     {
@@ -46,7 +47,7 @@ class Dashboard extends Page
             ?? (Filament::hasTopNavigation() ? 'heroicon-m-home' : 'heroicon-o-home');
     }
 
-    public static function getRoutePath(): string
+    public static function getRoutePath(Panel $panel): string
     {
         return static::$routePath;
     }
@@ -59,7 +60,7 @@ class Dashboard extends Page
         return [
             AccountWidget::class,
             SelectCassaWidget::class,
-            LatestUsersWidget::class,
+            //LatestUsersWidget::class,
             PagamentiChart::class,
             ProdottoChart::class,
         ];
@@ -92,7 +93,7 @@ class Dashboard extends Page
     {
         return ActionsAction::make('onboarding')
             ->modalHeading('Imposta Cassa e Evento')
-            ->form([
+            ->schema([
                 Select::make('evento_id')
                     ->label("EVENTO")
                     ->options(Evento::orderBy('id', 'DESC')->get()->pluck('descrizione', 'id'))

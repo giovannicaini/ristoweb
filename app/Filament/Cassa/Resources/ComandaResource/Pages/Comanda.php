@@ -2,6 +2,7 @@
 
 namespace App\Filament\Cassa\Resources\ComandaResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Actions\StampaScontrino;
 use App\Actions\SyncComandePostazioni;
 use App\Filament\Cassa\Loggers\ComandaLogger;
@@ -14,7 +15,6 @@ use Filament\Actions;
 use Filament\Actions\Action as FilamentActionsAction;
 use Filament\Actions\ActionGroup;
 use Filament\Actions\Modal\Actions\Action;
-use Filament\Forms\Components\Actions\Action as ActionsAction;
 use Filament\Forms\Components\Builder;
 use Filament\Forms\Components\TextInput;
 
@@ -35,11 +35,25 @@ use Lorisleiva\Actions\Action as LorisleivaActionsAction;
 use Noxo\FilamentActivityLog\Extensions\LogEditRecord;
 use Throwable;
 
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Form;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Get;
+
+
 use function Filament\Support\is_app_url;
 
-class Comanda extends EditRecord
+class Comanda extends EditRecord implements HasActions, HasSchemas
 {
     //use LogEditRecord; // <--- here
+    use InteractsWithActions, InteractsWithSchemas;
 
     public ?array $dataTotali = [];
     public function getContentTabLabel(): ?string
@@ -48,7 +62,7 @@ class Comanda extends EditRecord
     }
     protected static string $resource = ComandaResource::class;
     protected static string $layout = 'no-menu';
-    public static string $view = 'comanda';
+    public string $view = 'comanda';
     protected $listeners = ['refreshComanda' => '$refresh'];
 
     #[On('refreshComanda')]
@@ -66,6 +80,7 @@ class Comanda extends EditRecord
 
         $this->previousUrl = url()->previous();
     }
+    /*
     protected function getForms(): array
     {
         return [
@@ -86,7 +101,160 @@ class Comanda extends EditRecord
                     ->inlineLabel($this->hasInlineLabels()),
             )),
         ];
-    }
+    }*/
+    public function formTotali(Schema $schema): Schema
+{
+    return $schema
+        ->components([
+            Section::make('TOTALI E PAGAMENTO')
+                ->schema([
+                    TextInput::make('totale_prodotti_senza_sconto')
+                        ->label('Totale prodotti')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->extraInputAttributes(['class' => 'text-right'])
+                        ->afterStateHydrated(function (TextInput $component, string $state) {
+                            $component->state(number_format($state, 2));
+                        })
+                        ->suffix('€'),
+
+                    TextInput::make('totale_sconto_prodotti')
+                        ->label('Sconto sui prodotti')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->extraInputAttributes(['class' => 'text-right'])
+                        ->afterStateHydrated(function (TextInput $component, string $state) {
+                            $component->state(number_format($state, 2));
+                        })
+                        ->suffix('€'),
+
+                    TextInput::make('totale_prodotti_con_sconto')
+                        ->label('Subtotale')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->extraInputAttributes(['class' => 'text-right'])
+                        ->afterStateHydrated(function (TextInput $component, string $state) {
+                            $component->state(number_format($state, 2));
+                        })
+                        ->suffix('€'),
+
+                    TextInput::make('sconto')
+                        ->label('Sconto sulla comanda')
+                        ->numeric()
+                        ->default(0.00)
+                        ->extraInputAttributes(['class' => 'text-right'])
+                        ->afterStateHydrated(function (TextInput $component, $state) {
+                            if ($state) $component->state(number_format($state, 2));
+                        })
+                        ->live(debounce: 500)
+                        ->afterStateUpdated(function (TextInput $component, Set $set, Get $get) {
+                            $set('subtotale', number_format(
+                                (float) $get('totale_prodotti_con_sconto') - (float) $get('sconto') - (float) $get('buoni'),
+                                2
+                            ));
+                            $set('subtotale2', number_format(
+                                (float) $get('subtotale') - (float) $get('su_conto'),
+                                2
+                            ));
+                        })
+                        ->suffix('€'),
+
+                    TextInput::make('buoni')
+                        ->label('Buoni')
+                        ->numeric()
+                        ->default(0.00)
+                        ->extraInputAttributes(['class' => 'text-right'])
+                        ->afterStateHydrated(function (TextInput $component, $state) {
+                            if ($state) $component->state(number_format($state, 2));
+                        })
+                        ->live(debounce: 500)
+                        ->afterStateUpdated(function (TextInput $component, ?string $state, Set $set, Get $get) {
+                            $set('subtotale', number_format(
+                                (float) $get('totale_prodotti_con_sconto') - (float) $get('sconto') - (float) $get('buoni'),
+                                2
+                            ));
+                            $set('subtotale2', number_format(
+                                (float) $get('subtotale') - (float) $get('su_conto'),
+                                2
+                            ));
+                        })
+                        ->suffix('€'),
+
+                    TextInput::make('subtotale')
+                        ->label('Totale Da Pagare')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->live(debounce: 500)
+                        ->extraInputAttributes(['class' => 'text-right'])
+                        ->afterStateHydrated(function (TextInput $component, Get $get) {
+                            $component->state(number_format(
+                                (float) $get('totale_prodotti_con_sconto') - (float) $get('sconto') - (float) $get('buoni'),
+                                2
+                            ));
+                        })
+                        ->suffix('€'),
+
+                    Select::make('conto_id')
+                        ->label('Conto (volontari che pagano dopo)')
+                        ->relationship('conto', 'nome')
+                        ->native(false)
+                        ->createOptionForm([ TextInput::make('nome')->required() ])
+                        ->editOptionForm([ TextInput::make('nome')->required() ])
+                        ->columnSpan(2)
+                        ->live(),
+
+                    TextInput::make('su_conto')
+                        ->label('Importo sul conto')
+                        ->numeric()
+                        ->default(0.00)
+                        ->hidden(fn (Get $get) => $get('conto_id') == null)
+                        ->extraInputAttributes(['class' => 'text-right'])
+                        ->afterStateHydrated(function (TextInput $component, $state) {
+                            if ($state) $component->state(number_format($state, 2));
+                        })
+                        ->live(debounce: 500)
+                        ->afterStateHydrated(function (Set $set, Get $get) {
+                            $set('subtotale2', number_format(
+                                (float) $get('subtotale') - (float) $get('su_conto'),
+                                2
+                            ));
+                        })
+                        ->afterStateUpdated(function (TextInput $component, ?string $state, Set $set, Get $get) {
+                            $set('subtotale2', number_format(
+                                (float) $get('subtotale') - (float) $get('su_conto'),
+                                2
+                            ));
+                        })
+                        ->suffix('€')
+                        ->columnSpan(2),
+
+                    TextInput::make('subtotale2')
+                        ->label('Totale Da Pagare')
+                        ->numeric()
+                        ->default(0.00)
+                        ->disabled()
+                        ->live(debounce: 500)
+                        ->extraInputAttributes(['class' => 'text-right'])
+                        ->hidden(fn (Get $get) => $get('conto_id') == null)
+                        ->afterStateHydrated(function (TextInput $component, Get $get) {
+                            $component->state(number_format(
+                                (float) $get('subtotale') - (float) $get('su_conto'),
+                                2
+                            ));
+                        })
+                        ->suffix('€')
+                        ->columnStart(6),
+                ])
+                ->columns(6)
+                ->columnSpan(2),
+        ])
+        ->statePath('dataTotali');
+}
+
 
     public function getFormStatePath(): ?string
     {
@@ -349,10 +517,10 @@ class Comanda extends EditRecord
     protected function getActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make()
+            CreateAction::make()
                 ->label("Crea Nuova Comanda [F3]")
                 ->model(Comanda::class)
-                ->form([
+                ->schema([
                     TextInput::make('nominativo')
                         ->required()
                         ->maxLength(255),
@@ -362,7 +530,7 @@ class Comanda extends EditRecord
                 ])
                 ->keyBindings(["f3"])
                 ->action(function (array $data): void {
-                    $comanda = new \App\Models\Comanda();
+                    $comanda = new ModelsComanda();
                     $comanda->nominativo = $data["nominativo"];
                     $comanda->tavolo = $data["tavolo"];
                     $comanda->asporto = $data["asporto"];

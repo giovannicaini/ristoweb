@@ -2,11 +2,23 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\CategoriaResource\Pages\ListCategorias;
+use App\Filament\Resources\CategoriaResource\Pages\CreateCategoria;
+use App\Filament\Resources\CategoriaResource\Pages\EditCategoria;
 use App\Filament\Resources\CategoriaResource\Pages;
 use App\Filament\Resources\CategoriaResource\RelationManagers;
 use App\Models\Categoria;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,29 +29,29 @@ class CategoriaResource extends Resource
 {
     protected static ?string $model = Categoria::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
 
     public static function getPluralLabel(): ?string
     {
         return "Categorie";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('nome')
+        return $schema
+            ->components([
+                TextInput::make('nome')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('postazione_id')
+                Select::make('postazione_id')
                     ->relationship('postazione', 'nome'),
-                Forms\Components\Select::make('evento_id')
+                Select::make('evento_id')
                     ->relationship('evento', 'id')
                     ->required(),
-                Forms\Components\TextInput::make('ordine')
+                TextInput::make('ordine')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('colonna')
+                TextInput::make('colonna')
                     ->required()
                     ->numeric(),
             ]);
@@ -49,44 +61,44 @@ class CategoriaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nome')
+                TextColumn::make('nome')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('postazione.id')
+                TextColumn::make('postazione.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('evento.id')
+                TextColumn::make('evento.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('ordine')
+                TextColumn::make('ordine')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('colonna')
+                TextColumn::make('colonna')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -101,9 +113,9 @@ class CategoriaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategorias::route('/'),
-            'create' => Pages\CreateCategoria::route('/create'),
-            'edit' => Pages\EditCategoria::route('/{record}/edit'),
+            'index' => ListCategorias::route('/'),
+            'create' => CreateCategoria::route('/create'),
+            'edit' => EditCategoria::route('/{record}/edit'),
         ];
     }
 

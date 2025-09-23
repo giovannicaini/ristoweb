@@ -2,6 +2,20 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\EventoResource\Pages\ListEventos;
+use App\Filament\Resources\EventoResource\Pages\CreateEvento;
+use App\Filament\Resources\EventoResource\Pages\EditEvento;
 use App\Filament\Resources\EventoResource\Pages;
 use App\Filament\Resources\EventoResource\RelationManagers;
 use App\Models\Evento;
@@ -12,7 +26,6 @@ use Filament\Forms\Components\Actions;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action as ActionsAction;
@@ -25,31 +38,31 @@ class EventoResource extends Resource
 {
     protected static ?string $model = Evento::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calendar-days';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calendar-days';
 
     public static function getPluralLabel(): ?string
     {
         return "Eventi";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('nome')
+        return $schema
+            ->components([
+                TextInput::make('nome')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\DatePicker::make('data')
+                DatePicker::make('data')
                     ->required(),
-                Forms\Components\TextInput::make('ip_stampante')
+                TextInput::make('ip_stampante')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('incasso_effettivo')
+                TextInput::make('incasso_effettivo')
                     ->required()
                     ->numeric()
                     ->default(0.00),
-                Forms\Components\TextInput::make('evento_master')
+                TextInput::make('evento_master')
                     ->numeric(),
-                Forms\Components\Toggle::make('attivo'),
+                Toggle::make('attivo'),
             ]);
     }
 
@@ -57,45 +70,45 @@ class EventoResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nome')
+                TextColumn::make('nome')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('data')
+                TextColumn::make('data')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('ip_stampante')
+                TextColumn::make('ip_stampante')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('incasso_effettivo')
+                TextColumn::make('incasso_effettivo')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('evento_master')
+                TextColumn::make('evento_master')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('attivo')
+                IconColumn::make('attivo')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -110,9 +123,9 @@ class EventoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListEventos::route('/'),
-            'create' => Pages\CreateEvento::route('/create'),
-            'edit' => Pages\EditEvento::route('/{record}/edit'),
+            'index' => ListEventos::route('/'),
+            'create' => CreateEvento::route('/create'),
+            'edit' => EditEvento::route('/{record}/edit'),
         ];
     }
 

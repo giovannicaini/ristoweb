@@ -2,15 +2,29 @@
 
 namespace App\Filament\Cassa\Resources\ComandaResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\CreateAction;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
 use App\Actions\StampaScontrino;
 use App\Models\TipologiaPagamento;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Livewire\Component;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
@@ -33,16 +47,16 @@ class ComandePagamentiRelationManager extends RelationManager
     protected $listeners = ['refreshRelation' => '$refresh'];
 
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         $ids = $this->ownerRecord->comande_dettagli->pluck('prodotto_id')->toArray();
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('importo')
+        return $schema
+            ->components([
+                TextInput::make('importo')
                     ->required()
                     ->numeric()
                     ->prefix('€'),
-                Forms\Components\Select::make('tipologia_pagamento_id')
+                Select::make('tipologia_pagamento_id')
                     ->relationship('tipologia_pagamento', 'nome')
                     ->required(),
             ]);
@@ -55,47 +69,47 @@ class ComandePagamentiRelationManager extends RelationManager
             ->paginated(false)
             ->striped()
             ->columns([
-                Tables\Columns\TextColumn::make('tipologia_pagamento.nome')
+                TextColumn::make('tipologia_pagamento.nome')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('importo')
+                TextColumn::make('importo')
                     ->money('EUR')
                     ->sortable()
                     ->alignRight()
                     ->summarize(Sum::make()->money('EUR')->label('Totale Pagato')->extraAttributes(["class" => "text-primary-600"])),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make()
+                TrashedFilter::make()
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label("Inserisci nuovo pagamento [F1]")
+                CreateAction::make()->label("Inserisci nuovo pagamento [F1]")
                     ->keyBindings(['f1'])
-                    ->form([
-                        Forms\Components\Group::make([
-                            Forms\Components\TextInput::make('importo')
+                    ->schema([
+                        Group::make([
+                            TextInput::make('importo')
                                 ->required()
                                 ->numeric()
                                 ->prefix('€')
                                 ->default($ownerRecord->totale_da_pagare)
                                 ->columnSpan(1),
-                            Forms\Components\Select::make('tipologia_pagamento_id')
+                            Select::make('tipologia_pagamento_id')
                                 ->relationship('tipologia_pagamento', 'nome')
                                 ->default(TipologiaPagamento::where('nome', 'Contanti')->first()->id)
                                 ->required()
                                 ->live()
                                 ->columnSpan(1),
-                            Forms\Components\TextInput::make('contanti')
+                            TextInput::make('contanti')
                                 ->label("Contanti Dati (se si vuole calcolare il resto)")
                                 ->dehydrated(false)
                                 ->numeric()
@@ -104,7 +118,7 @@ class ComandePagamentiRelationManager extends RelationManager
                                 ->live(debounce: 500)
                                 ->afterStateUpdated(fn(Get $get, Set $set) => $set('resto', number_format(floatval($get('contanti')) - floatval($get('importo')), 2)))
                                 ->columnSpan(1),
-                            Forms\Components\TextInput::make('resto')
+                            TextInput::make('resto')
                                 ->dehydrated(false)
                                 ->disabled()
                                 ->numeric()
@@ -113,7 +127,7 @@ class ComandePagamentiRelationManager extends RelationManager
                                 ->columnSpan(1),
                         ])->columns(2)
                     ]),
-                Tables\Actions\Action::make()->make('stampaAll')
+                Action::make()->make('stampaAll')
                     ->label('Stampa Tutto [F2]')
                     ->modalHeading('Stampa Scontrino alla Cassa e Comande nelle varie postazioni')
                     ->requiresConfirmation()
@@ -124,35 +138,35 @@ class ComandePagamentiRelationManager extends RelationManager
                     ->modalIcon('heroicon-o-printer')
                     ->modalCancelAction(false)
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->after(function (Component $livewire) {
                         $livewire->dispatch('refreshComanda');
                     }),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->after(function (Component $livewire) {
                         $livewire->dispatch('refreshComanda');
                     }),
-                Tables\Actions\ForceDeleteAction::make()
+                ForceDeleteAction::make()
                     ->after(function (Component $livewire) {
                         $livewire->dispatch('refreshComanda');
                     }),
-                Tables\Actions\RestoreAction::make()
+                RestoreAction::make()
                     ->after(function (Component $livewire) {
                         $livewire->dispatch('refreshComanda');
                     }),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                         ->after(function (Component $livewire) {
                             $livewire->dispatch('refreshComanda');
                         }),
-                    Tables\Actions\ForceDeleteBulkAction::make()
+                    ForceDeleteBulkAction::make()
                         ->after(function (Component $livewire) {
                             $livewire->dispatch('refreshComanda');
                         }),
-                    Tables\Actions\RestoreBulkAction::make()
+                    RestoreBulkAction::make()
                         ->after(function (Component $livewire) {
                             $livewire->dispatch('refreshComanda');
                         }),
@@ -166,11 +180,11 @@ class ComandePagamentiRelationManager extends RelationManager
             });
     }
 
-    protected function configureCreateAction(Tables\Actions\CreateAction $action): void
+    protected function configureCreateAction(CreateAction $action): void
     {
         $action
             ->authorize(static fn(RelationManager $livewire): bool => (! $livewire->isReadOnly()) && $livewire->canCreate())
-            ->form(fn(Form $form): Form => $this->form($form->columns(2)))
+            ->schema(fn(Schema $schema): Schema => $this->form($schema->columns(2)))
             ->modalDescription('Associa nuovo pagamento alla comanda');
     }
 }

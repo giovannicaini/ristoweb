@@ -2,6 +2,7 @@
 
 namespace App\Filament\Cassa\Resources\ComandaResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Cassa\Resources\ComandaResource;
 use App\Models\Cassa;
 use App\Models\Evento;
@@ -20,10 +21,10 @@ class ListComandas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            \Filament\Actions\CreateAction::make()
+            CreateAction::make()
                 ->label("Crea Nuova Comanda [F3]")
                 ->model(Comanda::class)
-                ->form([
+                ->schema([
                     TextInput::make('nominativo')
                         ->required()
                         ->maxLength(255),
@@ -49,7 +50,7 @@ class ListComandas extends ListRecords
     {
         return Action::make('onboarding')
             ->modalHeading('Imposta Cassa e Evento')
-            ->form([
+            ->schema([
                 Select::make('evento_id')
                     ->label("EVENTO")
                     ->options(Evento::orderBy('id', 'DESC')->get()->pluck('descrizione', 'id'))

@@ -2,10 +2,23 @@
 
 namespace App\Filament\Cassa\Resources\ComandaResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
 use Closure;
 use Filament\Forms;
 use Livewire\Component;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,12 +38,12 @@ class ComandeDettagliRelationManager extends RelationManager
     protected $listeners = ['refreshRelation' => '$refresh'];
 
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
         $ids = $this->ownerRecord->comande_dettagli->pluck('prodotto_id')->toArray();
-        return $form
-            ->schema([
-                Forms\Components\Select::make('prodotto_id')
+        return $schema
+            ->components([
+                Select::make('prodotto_id')
                     ->relationship(
                         name: 'prodotto',
                         titleAttribute: 'nome',
@@ -39,13 +52,13 @@ class ComandeDettagliRelationManager extends RelationManager
                     ->required()
                     ->searchable()
                     ->preload(),
-                Forms\Components\TextInput::make('quantita')
+                TextInput::make('quantita')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('sconto_unitario')
+                TextInput::make('sconto_unitario')
                     ->numeric()
                     ->prefix('€'),
-                Forms\Components\TextInput::make('note')
+                TextInput::make('note')
                     ->label("Note per la cucina")
                     ->maxLength(255),
             ]);
@@ -58,22 +71,22 @@ class ComandeDettagliRelationManager extends RelationManager
             ->paginated(false)
             ->striped()
             ->columns([
-                Tables\Columns\TextColumn::make('quantita')
+                TextColumn::make('quantita')
                     ->numeric()
                     ->sortable()
                     ->alignCenter(),
-                Tables\Columns\TextColumn::make('prodotto.nome_breve')
+                TextColumn::make('prodotto.nome_breve')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('prodotto.prezzo')
+                TextColumn::make('prodotto.prezzo')
                     ->money('EUR')
                     ->sortable()
                     ->alignRight(),
-                Tables\Columns\TextColumn::make('sconto_unitario')
+                TextColumn::make('sconto_unitario')
                     ->money('EUR')
                     ->sortable()
                     ->alignRight(),
-                Tables\Columns\TextColumn::make('prezzo_totale')
+                TextColumn::make('prezzo_totale')
                     ->getStateUsing(function (Model $record) {
                         // return whatever you need to show
                         return ($record->prodotto->prezzo - $record->sconto_unitario) * $record->quantita;
@@ -81,45 +94,45 @@ class ComandeDettagliRelationManager extends RelationManager
                     ->money('EUR')
                     ->sortable()
                     ->alignRight(),
-                Tables\Columns\TextColumn::make('note')
+                TextColumn::make('note')
                     ->label("Note Cucina")
                     ->searchable(),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make()
+                TrashedFilter::make()
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make()
+            ->recordActions([
+                EditAction::make()
                     ->after(function (Component $livewire) {
                         $livewire->dispatch('refreshComanda');
                     }),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->after(function (Component $livewire) {
                         $livewire->dispatch('refreshComanda');
                     }),
-                Tables\Actions\ForceDeleteAction::make()
+                ForceDeleteAction::make()
                     ->after(function (Component $livewire) {
                         $livewire->dispatch('refreshComanda');
                     }),
-                Tables\Actions\RestoreAction::make()
+                RestoreAction::make()
                     ->after(function (Component $livewire) {
                         $livewire->dispatch('refreshComanda');
                     }),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
                         ->after(function (Component $livewire) {
                             $livewire->dispatch('refreshComanda');
                         }),
-                    Tables\Actions\ForceDeleteBulkAction::make()
+                    ForceDeleteBulkAction::make()
                         ->after(function (Component $livewire) {
                             $livewire->dispatch('refreshComanda');
                         }),
-                    Tables\Actions\RestoreBulkAction::make()
+                    RestoreBulkAction::make()
                         ->after(function (Component $livewire) {
                             $livewire->dispatch('refreshComanda');
                         }),
@@ -130,11 +143,11 @@ class ComandeDettagliRelationManager extends RelationManager
             ]));
     }
 
-    protected function configureCreateAction(Tables\Actions\CreateAction $action): void
+    protected function configureCreateAction(CreateAction $action): void
     {
         $action
             ->authorize(static fn(RelationManager $livewire): bool => (! $livewire->isReadOnly()) && $livewire->canCreate())
-            ->form(fn(Form $form): Form => $this->form($form->columns(2)))
+            ->schema(fn(Schema $schema): Schema => $this->form($schema->columns(2)))
             ->modalDescription('Inserisci nuovo prodotto nella comanda (NB non è possibile inserire prodotti già in comanda)');
     }
 }

@@ -76,7 +76,7 @@ class SyncComandePostazioni
                     $cp->save();
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Notification::make()
                 ->title('Errore nella creazione delle comande per le postazioni')
                 ->body($e->getMessage())

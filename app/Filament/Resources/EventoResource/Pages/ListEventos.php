@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\EventoResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\EventoResource;
 use App\Models\Categoria;
 use App\Models\Evento;
@@ -20,9 +21,9 @@ class ListEventos extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
             Action::make('importaDatiEventoAttivoDaAltroEvento')
-                ->form([
+                ->schema([
                     TextInput::make('evento_id')
                         ->required(),
                 ])

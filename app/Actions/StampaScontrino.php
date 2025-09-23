@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use Exception;
 use App\Helpers\PrintHelper;
 use App\Models\Cassa;
 use App\Models\Comanda;
@@ -29,14 +30,14 @@ class StampaScontrino
     {
         $cassiere = User::find($comanda->cassiere_id);
         if (!$comanda)
-            throw new \Exception("Comanda non trovata");
+            throw new Exception("Comanda non trovata");
         $tipi = array("tutto", "scontrino-con-postazioni", "postazioni", "scontrino-senza-postazioni", "tutto_in_cassa_attiva", "postazione", "messaggio");
         if (!in_array($tipo, $tipi))
-            throw new \Exception("Tipo stampa non valido");
+            throw new Exception("Tipo stampa non valido");
         if (($tipo == "postazione" || $tipo == "messaggio") && !$postazione_id)
-            throw new \Exception("Manca l'id postazione su cui stampare");
+            throw new Exception("Manca l'id postazione su cui stampare");
         if ($tipo == "messaggio" && !$messaggio)
-            throw new \Exception("Manca il messaggio da stampare");
+            throw new Exception("Manca il messaggio da stampare");
         //$postazioni_id = array();
         $postazioni_id = $comanda->comande_postazioni->pluck('postazione_id')->toArray();
         //$postazioni_scontrino = $comanda->postazioni->where('accoda_a_scontrino', true)->sortBy('ordine');
@@ -165,7 +166,7 @@ class StampaScontrino
 
             $printer->cut();
             $printer->pulse();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Notification::make()
                 ->title('Stampa Scontrino ' . $comanda->cassa->nome . ' (' . $comanda->cassa->stampante->descrizione . ') non avvenuta')
                 ->body($e->getMessage())
@@ -208,7 +209,7 @@ class StampaScontrino
                     $printer->feed();
                     $printer->cut();
                     $printer->pulse();
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     Notification::make()
                         ->title('Stampa Scontrino COPERTI non avvenuta')
                         ->body($e->getMessage())
@@ -237,7 +238,7 @@ class StampaScontrino
             $comanda_postazione = $comanda->comande_postazioni->where('postazione_id', $p->id)->first();
             try {
                 if ($comanda_postazione->printed) {
-                    throw new \Exception("La comanda per la postazione $p->nome è già stata stampata. Per procedere ad una nuova stampa e annullare la precedente, andare in 'Stato Stampe Singole Postazioni'");
+                    throw new Exception("La comanda per la postazione $p->nome è già stata stampata. Per procedere ad una nuova stampa e annullare la precedente, andare in 'Stato Stampe Singole Postazioni'");
                 }
                 $connector = new NetworkPrintConnector($stampante->ip, 9100, $this::secondi_attesa_stampante);
                 $printer = new Printer($connector);
@@ -245,7 +246,7 @@ class StampaScontrino
                 $printer->cut();
                 $comanda_postazione->printed_at = now();
                 $comanda_postazione->save();
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Notification::make()
                     ->title('Stampa Postazione ' . $p->nome . ' (' . $stampante->descrizione . ') non avvenuta')
                     ->body($e->getMessage())

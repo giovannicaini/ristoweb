@@ -17,7 +17,7 @@ class Comanda extends EditRecord
 {
     protected static string $resource = ComandaResource::class;
     protected static string $layout = 'no-menu';
-    public static string $view = 'comanda';
+    public string $view = 'comanda';
     protected $listeners = ['refreshComanda' => '$refresh'];
 
     #[On('refreshComanda')]

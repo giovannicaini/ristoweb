@@ -2,6 +2,25 @@
 
 namespace App\Filament\Cassa\Resources;
 
+use Filament\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Group;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Cassa\Resources\ComandaResource\RelationManagers\ComandeDettagliRelationManager;
+use App\Filament\Cassa\Resources\ComandaResource\RelationManagers\ComandePagamentiRelationManager;
+use App\Filament\Cassa\Resources\ComandaResource\RelationManagers\ComandePostazioniRelationManager;
+use App\Filament\Cassa\Resources\ComandaResource\Pages\ListComandas;
 use App\Actions\StampaScontrino;
 use App\Filament\Cassa\Resources\ComandaResource\Pages;
 use App\Filament\Cassa\Resources\ComandaResource\RelationManagers;
@@ -10,16 +29,10 @@ use App\Models\Comanda;
 use Faker\Core\Number;
 use Filament\Forms;
 use Filament\Forms\Components\Actions;
-use Filament\Forms\Components\Actions\Action as ActionsAction;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
@@ -35,7 +48,7 @@ class ComandaResource extends Resource
 {
     protected static ?string $model = Comanda::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-ticket';
 
     public static function getPluralLabel(): ?string
     {
@@ -44,67 +57,67 @@ class ComandaResource extends Resource
 
     public static function action2()
     {
-        return ActionsAction::make('action')
+        return Action::make('action')
             ->icon('heroicon-m-minus')
             ->action(
                 fn(TextInput $component) => dd($component)
             );
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('evento_id')
+        return $schema
+            ->components([
+                Select::make('evento_id')
                     ->relationship('evento', 'id')
                     ->required(),
-                Forms\Components\TextInput::make('n_ordine')
+                TextInput::make('n_ordine')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('nominativo')
+                TextInput::make('nominativo')
                     ->maxLength(255)
                     ->suffixAction(
-                        ActionsAction::make('copy')
+                        Action::make('copy')
                             ->icon('heroicon-s-clipboard-document-check')
                             ->action(function (Set $set) {
                                 $set('n_ordine', 2);
                             })
                     ),
-                Forms\Components\TextInput::make('tavolo')
+                TextInput::make('tavolo')
                     ->maxLength(255),
-                Forms\Components\Toggle::make('asporto'),
-                Forms\Components\Select::make('cassiere_id')
+                Toggle::make('asporto'),
+                Select::make('cassiere_id')
                     ->relationship('cassiere', 'name')
                     ->required(),
-                Forms\Components\TextInput::make('cassa_id')
+                TextInput::make('cassa_id')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('totale')
+                TextInput::make('totale')
                     ->numeric()
                     ->default(0.00),
-                Forms\Components\TextInput::make('pagato')
+                TextInput::make('pagato')
                     ->numeric(),
-                Forms\Components\TextInput::make('sconto')
+                TextInput::make('sconto')
                     ->numeric(),
-                Forms\Components\TextInput::make('buoni')
+                TextInput::make('buoni')
                     ->numeric(),
-                Forms\Components\Select::make('conto_id')
+                Select::make('conto_id')
                     ->relationship('conto', 'id'),
-                Forms\Components\TextInput::make('su_conto')
+                TextInput::make('su_conto')
                     ->numeric(),
-                Forms\Components\TextInput::make('stato')
+                TextInput::make('stato')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('note')
+                TextInput::make('note')
                     ->maxLength(255),
             ]);
     }
 
-    public static function formTotali(Form $form): Form
+    public static function formTotali(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make("TOTALI E PAGAMENTO")->schema([
-                    Forms\Components\TextInput::make('totale_prodotti_senza_sconto')
+                    TextInput::make('totale_prodotti_senza_sconto')
                         ->label('Totale prodotti')
                         ->numeric()
                         ->default(0.00)
@@ -114,7 +127,7 @@ class ComandaResource extends Resource
                             $component->state(number_format($state, 2));
                         })
                         ->suffix('€'),
-                    Forms\Components\TextInput::make('totale_sconto_prodotti')
+                    TextInput::make('totale_sconto_prodotti')
                         ->label('Sconto sui prodotti')
                         ->numeric()
                         ->default(0.00)
@@ -124,7 +137,7 @@ class ComandaResource extends Resource
                             $component->state(number_format($state, 2));
                         })
                         ->suffix('€'),
-                    Forms\Components\TextInput::make('totale_prodotti_con_sconto')
+                    TextInput::make('totale_prodotti_con_sconto')
                         ->label('Subtotale')
                         ->numeric()
                         ->default(0.00)
@@ -134,7 +147,7 @@ class ComandaResource extends Resource
                             $component->state(number_format($state, 2));
                         })
                         ->suffix('€'),
-                    Forms\Components\TextInput::make('sconto')
+                    TextInput::make('sconto')
                         ->label('Sconto sulla comanda')
                         ->numeric()
                         //->mask(RawJs::make('$money($input)'))
@@ -152,7 +165,7 @@ class ComandaResource extends Resource
                             //  $component->state(number_format(floatval($get('sconto')), 2));
                         })
                         ->suffix('€'),
-                    Forms\Components\TextInput::make('buoni')
+                    TextInput::make('buoni')
                         ->label('Buoni')
                         ->numeric()
                         //->mask(RawJs::make('$money($input)'))
@@ -170,7 +183,7 @@ class ComandaResource extends Resource
                             //$component->state(number_format(floatval($get('buoni')), 2));
                         })
                         ->suffix('€'),
-                    Forms\Components\TextInput::make('subtotale')
+                    TextInput::make('subtotale')
                         ->label('Totale Da Pagare')
                         ->numeric()
                         ->default(0.00)
@@ -182,21 +195,21 @@ class ComandaResource extends Resource
                         })
                         ->suffix('€'),
 
-                    Forms\Components\Select::make('conto_id')
+                    Select::make('conto_id')
                         ->label("Conto (volontari che pagano dopo)")
                         ->relationship('conto', 'nome')
                         ->native(false)
                         ->createOptionForm([
-                            Forms\Components\TextInput::make('nome')
+                            TextInput::make('nome')
                                 ->required()
                         ])
                         ->editOptionForm([
-                            Forms\Components\TextInput::make('nome')
+                            TextInput::make('nome')
                                 ->required()
                         ])
                         ->columnSpan(2)
                         ->live(),
-                    Forms\Components\TextInput::make('su_conto')
+                    TextInput::make('su_conto')
                         ->label('Importo sul conto')
                         ->numeric()
                         //->mask(RawJs::make('$money($input)'))
@@ -220,7 +233,7 @@ class ComandaResource extends Resource
                         })
                         ->suffix('€')
                         ->columnSpan(2),
-                    Forms\Components\TextInput::make('subtotale2')
+                    TextInput::make('subtotale2')
                         ->label('Totale Da Pagare')
                         ->numeric()
                         ->default(0.00)
@@ -246,15 +259,15 @@ class ComandaResource extends Resource
 
         $schema[] = Section::make("DATI GENERALI COMANDA")
             ->schema([
-                Forms\Components\TextInput::make('n_ordine')
+                TextInput::make('n_ordine')
                     ->required()
                     ->numeric()
                     ->disabled(),
-                Forms\Components\TextInput::make('nominativo')
+                TextInput::make('nominativo')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('tavolo')
+                TextInput::make('tavolo')
                     ->maxLength(255),
-                Forms\Components\Toggle::make('asporto'),
+                Toggle::make('asporto'),
             ])
             ->columnSpan(1)
             ->columns(4)
@@ -278,7 +291,7 @@ class ComandaResource extends Resource
                         ->minValue(0)
                         ->maxValue(100)
                         ->suffixAction(
-                            ActionsAction::make('addValueProdotto' . $prodotto->id)
+                            Action::make('addValueProdotto' . $prodotto->id)
                                 ->icon('heroicon-s-plus')
                                 ->action(function (Set $set, Get $get) use ($prodotto) {
                                     $set('prodotto_' . $prodotto->id, intval($get('prodotto_' . $prodotto->id)) + 1);
@@ -286,7 +299,7 @@ class ComandaResource extends Resource
                                 ->extraAttributes(['tabIndex' => -1])
                         )
                         ->prefixAction(
-                            ActionsAction::make('dimValueProdotto' . $prodotto->id)
+                            Action::make('dimValueProdotto' . $prodotto->id)
                                 ->icon('heroicon-s-minus')
                                 ->action(function (Set $set, Get $get) use ($prodotto) {
 
@@ -308,8 +321,8 @@ class ComandaResource extends Resource
                         ->label('')
                         ->key('placeholder_prezzo_' . $prodotto->id)
                         ->hintAction(
-                            ActionsAction::make('note_cucina')
-                                ->form([
+                            Action::make('note_cucina')
+                                ->schema([
                                     Textarea::make('note_prodotto')
                                         ->label('Note per la cucina')
                                         ->required(),
@@ -351,10 +364,10 @@ class ComandaResource extends Resource
         return $schema;
     }
 
-    public static function formComanda(Form $form): Form
+    public static function formComanda(Schema $schema): Schema
     {
-        return $form
-            ->schema(self::createSchema())
+        return $schema
+            ->components(self::createSchema())
             ->columns(1);
     }
 
@@ -362,68 +375,68 @@ class ComandaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('n_ordine')
+                TextColumn::make('n_ordine')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nominativo')
+                TextColumn::make('nominativo')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tavolo')
+                TextColumn::make('tavolo')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('asporto')
+                IconColumn::make('asporto')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('cassiere.name')
+                TextColumn::make('cassiere.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('cassa_id')
+                TextColumn::make('cassa_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('totale_pagato')
+                TextColumn::make('totale_pagato')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('totale_da_pagare')
+                TextColumn::make('totale_da_pagare')
                     ->label('Da Pagare')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('sconto')
+                TextColumn::make('sconto')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('buoni')
+                TextColumn::make('buoni')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('su_conto')
+                TextColumn::make('su_conto')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('conto.id')
+                TextColumn::make('conto.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('stato')
+                TextColumn::make('stato')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('note')
+                TextColumn::make('note')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
+            ->recordActions([
                 //Tables\Actions\EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ])
             ->recordUrl(
@@ -434,9 +447,9 @@ class ComandaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\ComandeDettagliRelationManager::class,
-            RelationManagers\ComandePagamentiRelationManager::class,
-            RelationManagers\ComandePostazioniRelationManager::class
+            ComandeDettagliRelationManager::class,
+            ComandePagamentiRelationManager::class,
+            ComandePostazioniRelationManager::class
 
         ];
     }
@@ -444,10 +457,12 @@ class ComandaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListComandas::route('/'),
+            'index' => ListComandas::route('/'),
             //'create' => Pages\CreateComanda::route('/create'),
             //'edit' => Pages\EditComanda::route('/{record}/edit'),
             'comanda' => Pages\Comanda::route('/{record}/comanda'),
+            'gestione' => Pages\GestioneComanda::route('/{record_id}/gestione'),
+
 
         ];
     }

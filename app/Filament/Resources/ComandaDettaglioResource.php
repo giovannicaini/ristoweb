@@ -2,11 +2,23 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\ComandaDettaglioResource\Pages\ListComandaDettaglios;
+use App\Filament\Resources\ComandaDettaglioResource\Pages\CreateComandaDettaglio;
+use App\Filament\Resources\ComandaDettaglioResource\Pages\EditComandaDettaglio;
 use App\Filament\Resources\ComandaDettaglioResource\Pages;
 use App\Filament\Resources\ComandaDettaglioResource\RelationManagers;
 use App\Models\ComandaDettaglio;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,31 +29,31 @@ class ComandaDettaglioResource extends Resource
 {
     protected static ?string $model = ComandaDettaglio::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-queue-list';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-queue-list';
 
     public static function getPluralLabel(): ?string
     {
         return "Comande Dettagli";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('comanda_id')
+        return $schema
+            ->components([
+                Select::make('comanda_id')
                     ->relationship('comanda', 'id')
                     ->required(),
-                Forms\Components\Select::make('prodotto_id')
+                Select::make('prodotto_id')
                     ->relationship('prodotto', 'id')
                     ->required(),
-                Forms\Components\TextInput::make('quantita')
+                TextInput::make('quantita')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('prezzo_unitario')
+                TextInput::make('prezzo_unitario')
                     ->numeric(),
-                Forms\Components\TextInput::make('prezzo_totale')
+                TextInput::make('prezzo_totale')
                     ->numeric(),
-                Forms\Components\TextInput::make('note')
+                TextInput::make('note')
                     ->maxLength(255),
             ]);
     }
@@ -50,47 +62,47 @@ class ComandaDettaglioResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('comanda.id')
+                TextColumn::make('comanda.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('prodotto.id')
+                TextColumn::make('prodotto.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('quantita')
+                TextColumn::make('quantita')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('prezzo_unitario')
+                TextColumn::make('prezzo_unitario')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('prezzo_totale')
+                TextColumn::make('prezzo_totale')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('note')
+                TextColumn::make('note')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -105,9 +117,9 @@ class ComandaDettaglioResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListComandaDettaglios::route('/'),
-            'create' => Pages\CreateComandaDettaglio::route('/create'),
-            'edit' => Pages\EditComandaDettaglio::route('/{record}/edit'),
+            'index' => ListComandaDettaglios::route('/'),
+            'create' => CreateComandaDettaglio::route('/create'),
+            'edit' => EditComandaDettaglio::route('/{record}/edit'),
         ];
     }
 

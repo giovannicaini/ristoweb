@@ -2,15 +2,28 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\ProdottoResource\Pages\ListProdottos;
+use App\Filament\Resources\ProdottoResource\Pages\CreateProdotto;
+use App\Filament\Resources\ProdottoResource\Pages\EditProdotto;
 use App\Filament\Resources\ProdottoResource\Pages;
 use App\Filament\Resources\ProdottoResource\RelationManagers;
 use App\Models\Prodotto;
 use Filament\Actions\ReplicateAction;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
-use Filament\Tables\Actions\ReplicateAction as ActionsReplicateAction;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -19,7 +32,7 @@ class ProdottoResource extends Resource
 {
     protected static ?string $model = Prodotto::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shopping-cart';
 
 
     public static function getPluralLabel(): ?string
@@ -27,28 +40,28 @@ class ProdottoResource extends Resource
         return "Prodotti";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('nome')
+        return $schema
+            ->components([
+                TextInput::make('nome')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('nome_breve')
+                TextInput::make('nome_breve')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('prezzo')
+                TextInput::make('prezzo')
                     ->required()
                     ->numeric()
                     ->prefix('€'),
-                Forms\Components\Select::make('categoria_id')
+                Select::make('categoria_id')
                     ->relationship('categoria', 'nome')
                     ->required(),
-                Forms\Components\TextInput::make('ordine')
+                TextInput::make('ordine')
                     ->required()
                     ->numeric(),
-                Forms\Components\Toggle::make('coperto'),
-                Forms\Components\Toggle::make('attivo')
+                Toggle::make('coperto'),
+                Toggle::make('attivo')
                     ->required(),
             ]);
     }
@@ -57,52 +70,52 @@ class ProdottoResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nome')
+                TextColumn::make('nome')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('nome_breve')
+                TextColumn::make('nome_breve')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('prezzo')
+                TextColumn::make('prezzo')
                     ->money('EUR')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('categoria.id')
+                TextColumn::make('categoria.id')
                     ->numeric()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('ordine')
+                TextColumn::make('ordine')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('attivo')
+                IconColumn::make('attivo')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('evento.data')
+                TextColumn::make('evento.data')
                     ->date()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                ActionsReplicateAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                ReplicateAction::make(),
 
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -117,9 +130,9 @@ class ProdottoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListProdottos::route('/'),
-            'create' => Pages\CreateProdotto::route('/create'),
-            'edit' => Pages\EditProdotto::route('/{record}/edit'),
+            'index' => ListProdottos::route('/'),
+            'create' => CreateProdotto::route('/create'),
+            'edit' => EditProdotto::route('/{record}/edit'),
         ];
     }
 

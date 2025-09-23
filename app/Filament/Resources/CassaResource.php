@@ -2,11 +2,23 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\CassaResource\Pages\ListCassas;
+use App\Filament\Resources\CassaResource\Pages\CreateCassa;
+use App\Filament\Resources\CassaResource\Pages\EditCassa;
 use App\Filament\Resources\CassaResource\Pages;
 use App\Filament\Resources\CassaResource\RelationManagers;
 use App\Models\Cassa;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,21 +29,21 @@ class CassaResource extends Resource
 {
     protected static ?string $model = Cassa::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-calculator';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-calculator';
 
     public static function getPluralLabel(): ?string
     {
         return "Casse";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('nome')
+        return $schema
+            ->components([
+                TextInput::make('nome')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\Select::make('stampante_id')
+                Select::make('stampante_id')
                     ->relationship('stampante', 'id')
                     ->required(),
             ]);
@@ -41,36 +53,36 @@ class CassaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('nome')
+                TextColumn::make('nome')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('stampante.descrizione')
+                TextColumn::make('stampante.descrizione')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('stampante.ip')
+                TextColumn::make('stampante.ip')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
@@ -85,9 +97,9 @@ class CassaResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCassas::route('/'),
-            'create' => Pages\CreateCassa::route('/create'),
-            'edit' => Pages\EditCassa::route('/{record}/edit'),
+            'index' => ListCassas::route('/'),
+            'create' => CreateCassa::route('/create'),
+            'edit' => EditCassa::route('/{record}/edit'),
         ];
     }
 

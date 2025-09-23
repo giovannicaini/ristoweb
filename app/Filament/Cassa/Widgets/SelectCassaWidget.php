@@ -18,7 +18,7 @@ class SelectCassaWidget extends Widget implements HasActions, HasForms
     use InteractsWithActions;
     use InteractsWithForms;
 
-    protected static string $view = 'filament.cassa.widgets.select-cassa-widget';
+    protected string $view = 'filament.cassa.widgets.select-cassa-widget';
 
     public function testAction(): Action
     {
@@ -26,7 +26,7 @@ class SelectCassaWidget extends Widget implements HasActions, HasForms
             ->modalHeading('Imposta Cassa e Evento')
             ->label('Imposta Cassa e Evento')
             //->requiresConfirmation()
-            ->form([
+            ->schema([
                 Select::make('evento_id')
                     ->label("EVENTO")
                     ->options(Evento::orderBy('id', 'DESC')->get()->pluck('descrizione', 'id'))

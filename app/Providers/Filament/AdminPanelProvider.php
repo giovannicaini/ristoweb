@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Dashboard;
+use Filament\Widgets\AccountWidget;
 use Althinect\FilamentSpatieRolesPermissions\FilamentSpatieRolesPermissionsPlugin;
 use App\Filament\Cassa\Widgets\SelectCassaWidget;
 use App\Filament\Resources\EventoResource\Widgets\EventoAttivoWidget;
@@ -43,13 +45,13 @@ class AdminPanelProvider extends PanelProvider
             //->discoverResources(in: app_path('Filament/Cassa/Resources'), for: 'App\\Filament\\Cassa\\Resources')
             //->discoverPages(in: app_path('Filament/Cassa/Pages'), for: 'App\\Filament\\Cassa\\Pages')
             ->pages([
-                \App\Filament\Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                AccountWidget::class,
                 SelectCassaWidget::class,
-                LatestUsersWidget::class
+                //LatestUsersWidget::class
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -67,7 +69,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 //FilamentSpatieRolesPermissionsPlugin::make(),
-                FilamentAuthentication::make(),
+                //FilamentAuthentication::make(),
                 FilamentApexChartsPlugin::make()
             ])
             ->renderHook(

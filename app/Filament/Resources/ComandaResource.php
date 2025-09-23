@@ -2,6 +2,25 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Section;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use App\Filament\Resources\ComandaResource\RelationManagers\ComandeDettagliRelationManager;
+use App\Filament\Resources\ComandaResource\Pages\ListComandas;
+use App\Filament\Resources\ComandaResource\Pages\CreateComanda;
+use App\Filament\Resources\ComandaResource\Pages\EditComanda;
 use App\Filament\Forms\Components\ProdottoSlider as ComponentsProdottoSlider;
 use App\Filament\Resources\ComandaResource\Pages;
 use App\Filament\Resources\ComandaResource\RelationManagers;
@@ -12,18 +31,12 @@ use DeepCopy\Matcher\PropertyTypeMatcher;
 use Filament\Actions\Modal\Actions\Action;
 use Filament\Forms;
 use Filament\Forms\Components\Actions;
-use Filament\Forms\Components\Actions\Action as ActionsAction;
 use Filament\Forms\Components\Card;
 use Filament\Forms\Components\Contracts\HasAffixActions;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -36,7 +49,7 @@ class ComandaResource extends Resource
 {
     protected static ?string $model = Comanda::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-ticket';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-ticket';
 
     public static function getPluralLabel(): ?string
     {
@@ -45,57 +58,57 @@ class ComandaResource extends Resource
 
     public static function action2()
     {
-        return ActionsAction::make('action')
+        return \Filament\Actions\Action::make('action')
             ->icon('heroicon-m-minus')
             ->action(
                 fn(TextInput $component) => dd($component)
             );
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('evento_id')
+        return $schema
+            ->components([
+                Select::make('evento_id')
                     ->relationship('evento', 'id')
                     ->required(),
-                Forms\Components\TextInput::make('n_ordine')
+                TextInput::make('n_ordine')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('nominativo')
+                TextInput::make('nominativo')
                     ->maxLength(255)
                     ->suffixAction(
-                        ActionsAction::make('copy')
+                        \Filament\Actions\Action::make('copy')
                             ->icon('heroicon-s-clipboard-document-check')
                             ->action(function (Set $set) {
                                 $set('n_ordine', 2);
                             })
                     ),
-                Forms\Components\TextInput::make('tavolo')
+                TextInput::make('tavolo')
                     ->maxLength(255),
-                Forms\Components\Toggle::make('asporto'),
-                Forms\Components\Select::make('cassiere_id')
+                Toggle::make('asporto'),
+                Select::make('cassiere_id')
                     ->relationship('cassiere', 'name')
                     ->required(),
-                Forms\Components\TextInput::make('cassa_id')
+                TextInput::make('cassa_id')
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('totale')
+                TextInput::make('totale')
                     ->numeric()
                     ->default(0.00),
-                Forms\Components\TextInput::make('pagato')
+                TextInput::make('pagato')
                     ->numeric(),
-                Forms\Components\TextInput::make('sconto')
+                TextInput::make('sconto')
                     ->numeric(),
-                Forms\Components\TextInput::make('buoni')
+                TextInput::make('buoni')
                     ->numeric(),
-                Forms\Components\TextInput::make('su_conto')
+                TextInput::make('su_conto')
                     ->numeric(),
-                Forms\Components\Select::make('conto_id')
+                Select::make('conto_id')
                     ->relationship('conto', 'id'),
-                Forms\Components\TextInput::make('stato')
+                TextInput::make('stato')
                     ->maxLength(255),
-                Forms\Components\TextInput::make('note')
+                TextInput::make('note')
                     ->maxLength(255),
             ]);
     }
@@ -123,7 +136,7 @@ class ComandaResource extends Resource
                         ->minValue(0)
                         ->maxValue(100)
                         ->suffixAction(
-                            ActionsAction::make('addValueProdotto' . $prodotto->id)
+                            \Filament\Actions\Action::make('addValueProdotto' . $prodotto->id)
                                 ->icon('heroicon-s-plus')
                                 ->action(function (Set $set, Get $get) use ($prodotto) {
                                     $set('prodotto_' . $prodotto->id, $get('prodotto_' . $prodotto->id) + 1);
@@ -131,7 +144,7 @@ class ComandaResource extends Resource
                                 ->extraAttributes(['tabIndex' => -1])
                         )
                         ->prefixAction(
-                            ActionsAction::make('dimValueProdotto' . $prodotto->id)
+                            \Filament\Actions\Action::make('dimValueProdotto' . $prodotto->id)
                                 ->icon('heroicon-s-minus')
                                 ->action(function (Set $set, Get $get) use ($prodotto) {
 
@@ -153,8 +166,8 @@ class ComandaResource extends Resource
                         ->label('')
                         ->key('placeholder_prezzo_' . $prodotto->id)
                         ->hintAction(
-                            ActionsAction::make('note_cucina')
-                                ->form([
+                            \Filament\Actions\Action::make('note_cucina')
+                                ->schema([
                                     Textarea::make('note_prodotto')
                                         ->label('Note per la cucina')
                                         ->required(),
@@ -196,10 +209,10 @@ class ComandaResource extends Resource
         return $schema;
     }
 
-    public static function formComanda(Form $form): Form
+    public static function formComanda(Schema $schema): Schema
     {
-        return $form
-            ->schema(self::createSchema())
+        return $schema
+            ->components(self::createSchema())
             ->columns(1);
     }
     public function decrementValue()
@@ -221,86 +234,86 @@ class ComandaResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('evento.id')
+                TextColumn::make('evento.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('n_ordine')
+                TextColumn::make('n_ordine')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('nominativo')
+                TextColumn::make('nominativo')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('tavolo')
+                TextColumn::make('tavolo')
                     ->searchable(),
-                Tables\Columns\IconColumn::make('asporto')
+                IconColumn::make('asporto')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('cassiere.name')
+                TextColumn::make('cassiere.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('cassa_id')
+                TextColumn::make('cassa_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('totale')
+                TextColumn::make('totale')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('pagato')
+                TextColumn::make('pagato')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('sconto')
+                TextColumn::make('sconto')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('buoni')
+                TextColumn::make('buoni')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('su_conto')
+                TextColumn::make('su_conto')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('conto.id')
+                TextColumn::make('conto.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('stato')
+                TextColumn::make('stato')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('note')
+                TextColumn::make('note')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TrashedFilter::make(),
+                TrashedFilter::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ForceDeleteBulkAction::make(),
-                    Tables\Actions\RestoreBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
                 ]),
             ]);
     }
     public static function getRelations(): array
     {
         return [
-            RelationManagers\ComandeDettagliRelationManager::class,
+            ComandeDettagliRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListComandas::route('/'),
-            'create' => Pages\CreateComanda::route('/create'),
-            'edit' => Pages\EditComanda::route('/{record}/edit'),
+            'index' => ListComandas::route('/'),
+            'create' => CreateComanda::route('/create'),
+            'edit' => EditComanda::route('/{record}/edit'),
             'comanda' => Pages\Comanda::route('/{record}/comanda'),
 
         ];

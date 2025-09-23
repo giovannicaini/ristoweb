@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Widgets\AccountWidget;
+use Filament\Support\Enums\Width;
 use App\Filament\Cassa\Widgets\SelectCassaWidget;
 use App\Filament\Resources\EventoResource\Widgets\EventoAttivoWidget;
 use Filament\Http\Middleware\Authenticate;
@@ -11,7 +13,6 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Support\Enums\MaxWidth;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -44,7 +45,7 @@ class CassaPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Cassa/Widgets'), for: 'App\\Filament\\Cassa\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
+                AccountWidget::class,
                 SelectCassaWidget::class
             ])
             ->middleware([
@@ -63,16 +64,18 @@ class CassaPanelProvider extends PanelProvider
             ])
             ->plugins([
                 //FilamentSpatieRolesPermissionsPlugin::make(),
-                FilamentAuthentication::make(),
+                //FilamentAuthentication::make(),
                 FilamentApexChartsPlugin::make()
             ])
             ->databaseTransactions()
-            ->maxContentWidth(MaxWidth::Full)
+            ->maxContentWidth(Width::Full)
             ->renderHook(
                 'panels::head.start',
                 fn(): string => FacadesVite::useHotFile('admin.hot')
                     ->useBuildDirectory('build')
                     ->withEntryPoints(['resources/css/app.css'])->toHtml()
-            );
+            )
+            ->unsavedChangesAlerts()
+            ->viteTheme('resources/css/filament/cassa/theme.css');;
     }
 }

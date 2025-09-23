@@ -2,11 +2,20 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\PagamentoResource\Pages\ListPagamentos;
+use App\Filament\Resources\PagamentoResource\Pages\CreatePagamento;
+use App\Filament\Resources\PagamentoResource\Pages\EditPagamento;
 use App\Filament\Resources\PagamentoResource\Pages;
 use App\Filament\Resources\PagamentoResource\RelationManagers;
 use App\Models\Pagamento;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,7 +26,7 @@ class PagamentoResource extends Resource
 {
     protected static ?string $model = Pagamento::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-banknotes';
 
 
     public static function getPluralLabel(): ?string
@@ -25,20 +34,20 @@ class PagamentoResource extends Resource
         return "Pagamenti";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('comanda_id')
+        return $schema
+            ->components([
+                Select::make('comanda_id')
                     ->relationship('comanda', 'id')
                     ->required(),
-                Forms\Components\TextInput::make('importo')
+                TextInput::make('importo')
                     ->required()
                     ->numeric(),
-                Forms\Components\Select::make('evento_id')
+                Select::make('evento_id')
                     ->relationship('evento', 'id')
                     ->required(),
-                Forms\Components\Select::make('tipologia_pagamento_id')
+                Select::make('tipologia_pagamento_id')
                     ->relationship('tipologia_pagamento', 'id')
                     ->required(),
             ]);
@@ -48,27 +57,27 @@ class PagamentoResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('comanda.id')
+                TextColumn::make('comanda.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('importo')
+                TextColumn::make('importo')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('evento.id')
+                TextColumn::make('evento.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('tipologia_pagamento.id')
+                TextColumn::make('tipologia_pagamento.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('deleted_at')
+                TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -76,12 +85,12 @@ class PagamentoResource extends Resource
             ->filters([
                 //
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -96,9 +105,9 @@ class PagamentoResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPagamentos::route('/'),
-            'create' => Pages\CreatePagamento::route('/create'),
-            'edit' => Pages\EditPagamento::route('/{record}/edit'),
+            'index' => ListPagamentos::route('/'),
+            'create' => CreatePagamento::route('/create'),
+            'edit' => EditPagamento::route('/{record}/edit'),
         ];
     }
 }

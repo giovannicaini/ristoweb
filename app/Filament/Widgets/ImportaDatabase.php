@@ -23,7 +23,7 @@ class ImportaDatabase extends Widget implements HasForms, HasActions
     use InteractsWithActions;
     use InteractsWithForms;
 
-    protected static string $view = 'filament.widgets.importa-database';
+    protected string $view = 'filament.widgets.importa-database';
 
     /* protected function getViewData(): array
     {
@@ -43,7 +43,7 @@ class ImportaDatabase extends Widget implements HasForms, HasActions
     {
         return Action::make('prova')
             ->label("Importa JSON Database")
-            ->form([
+            ->schema([
                 FileUpload::make('json')
                     ->label("Importa JSON Database")
                     ->disk('local')

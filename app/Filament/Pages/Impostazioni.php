@@ -10,9 +10,9 @@ use Filament\Widgets\StatsOverviewWidget;
 
 class Impostazioni extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-cog-8-tooth';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-8-tooth';
 
-    protected static string $view = 'filament.pages.impostazioni';
+    protected string $view = 'filament.pages.impostazioni';
 
     protected function getHeaderActions(): array
     {
@@ -25,7 +25,7 @@ class Impostazioni extends Page
         ];
     }
 
-    public function getHeaderWidgetsColumns(): int | array
+    public function getHeaderWidgetsColumns(): int|array
     {
         return 1;
     }

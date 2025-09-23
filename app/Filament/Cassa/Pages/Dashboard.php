@@ -15,7 +15,7 @@ class Dashboard extends \Filament\Pages\Dashboard
     {
         return Action::make('onboarding')
             ->modalHeading('Imposta Cassa e Evento')
-            ->form([
+            ->schema([
                 Select::make('evento_id')
                     ->label("EVENTO")
                     ->options(Evento::orderBy('id', 'DESC')->get()->pluck('descrizione', 'id'))
